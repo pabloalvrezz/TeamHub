@@ -5,12 +5,25 @@ import { StyleSheet, Text, View } from "react-native";
 
 import Home from "./screens/Home";
 import Login from "./screens/Login";
+import Register from "./screens/Register";
 
 const Stack = createStackNavigator();
 
 function MyStack() {
   return (
     <Stack.Navigator>
+      <Stack.Screen
+        name="Register"
+        component={Register}
+        options={{
+          title: "Register",
+          headerTintColor: "#000",
+          headerTitleAlign: "center",
+          headerStyle: {
+            backgroundColor: "#00b4d8",
+          },
+        }}
+      />
       <Stack.Screen
         name="Login"
         component={Login}
@@ -19,7 +32,7 @@ function MyStack() {
           headerTintColor: "#000",
           headerTitleAlign: "center",
           headerStyle: {
-            backgroundColor: "#f2aa1f",
+            backgroundColor: "#00b4d8",
           },
         }}
       />
@@ -31,7 +44,7 @@ function MyStack() {
           headerTintColor: "#000",
           headerTitleAlign: "center",
           headerStyle: {
-            backgroundColor: "#f2aa1f",
+            backgroundColor: "#00b4d8",
           },
         }}
       />

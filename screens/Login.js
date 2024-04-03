@@ -19,16 +19,41 @@ export default function Login(props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const createAccount = () => {
+    props.navigation.navigate("Register");
+  };
+
   // Create the login function
   const login = async () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
 
-      Alert.alert("Sign in...", "You are signed in!");
+      Alert.alert("Success", "Login...");
 
       props.navigation.navigate("Home");
     } catch (error) {
-      console.log(error);
+      let errorMessage = "Error de inicio de sesión";
+
+      // Check the error code
+      switch (error.code) {
+        case "auth/user-not-found":
+        case "auth/invalid-email":
+          errorMessage = "Wrong Email ";
+          break;
+        case "auth/wrong-password":
+          errorMessage = "Wrong Password";
+          break;
+        case "auth/invalid-credential":
+          errorMessage = "Invalid Credentials";
+          break;
+        default:
+          errorMessage = "Login Error";
+          break;
+      }
+
+      // Show the error message in console and alert
+      console.log(errorMessage);
+      Alert.alert("Error", errorMessage);
     }
   };
 
@@ -68,6 +93,15 @@ export default function Login(props) {
         </View>
 
         <View style={styles.separator}></View>
+
+        <View style={styles.registerBox}>
+          <Text>Or create one </Text>
+          <TouchableOpacity>
+            <Text onPress={createAccount} style={{ color: "#00b4d8" }}>
+              here
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -78,7 +112,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#11435B",
+    backgroundColor: "#ffffff",
   },
   profile: {
     width: 120,
@@ -111,13 +145,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   button: {
-    backgroundColor: "#f2aa1f",
+    backgroundColor: "#00b4d8",
     fontWeight: "bold",
     borderRadius: 30,
     paddingVertical: 20,
     width: "90%",
     marginTop: 20,
   },
+
   buttonText: {
     color: "black",
     fontWeight: "bold",
@@ -127,5 +162,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "gray",
     marginVertical: 10,
+  },
+
+  registerBox: {
+    flexDirection: "row",
+    justifyContent: "center",
   },
 });
