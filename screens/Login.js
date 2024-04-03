@@ -27,7 +27,6 @@ export default function Login(props) {
   const login = async () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
-
       Alert.alert("Success", "Login...");
 
       props.navigation.navigate("Home");

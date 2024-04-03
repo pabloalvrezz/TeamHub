@@ -9,6 +9,14 @@ import {
 } from "react-native";
 
 import { FontAwesome5 } from "@expo/vector-icons";
+import appFirebase from "../credencials";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+
+const auth = getAuth(appFirebase);
 
 const strengthLabels = ["weak", "medium", "strong"];
 
@@ -41,15 +49,14 @@ const Register = (props) => {
   };
 
   // Const to create account
-  const createAccount = () => {
+  const createAccount = async () => {
     (equlaPasswords = false), (weakPassword = true);
     error = "Error creating account";
 
     // Check if the passwords are equal
-    if (password === repeatPassword){
-      equlaPasswords = true;
+    if (password !== repeatPassword) {
       error = "Passwords do not match";
-    } 
+    } else equlaPasswords = true;
 
     // Check the strength of the password
     if (strength !== "weak") {
@@ -65,8 +72,21 @@ const Register = (props) => {
 
     // Check all the conditions
     if (equlaPasswords && !weakPassword && checkEmail(email)) {
-      alert("Account created successfully");
-      props.navigation.navigate("Home");
+      // Create the account
+      await createUserWithEmailAndPassword(auth, email, password)
+      
+        // Then navigate to home screen and show alert
+        .then(() => {
+          alert("Account created successfully");
+          props.navigation.navigate("Home");
+        })
+        
+        // Catch the errors
+        .catch((error) => {
+          if (error.code === "auth/email-already-in-use") {
+            alert("Email already in use");
+          }
+        });
     } else {
       alert(error);
     }
