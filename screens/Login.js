@@ -127,7 +127,7 @@ export default function Login(props) {
           <Text>Or create one </Text>
           <TouchableOpacity>
             <Text onPress={createAccount} style={{ color: "#00b4d8" }}>
-              here
+              herer
             </Text>
           </TouchableOpacity>
         </View>
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#000",
   },
   profile: {
     width: 120,
