@@ -9,8 +9,8 @@ import {
   Alert,
 } from "react-native";
 
-import appFirebase from "../credencials";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import appFirebase from "../credencials";
 
 const auth = getAuth(appFirebase);
 

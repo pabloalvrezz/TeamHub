@@ -1,24 +1,20 @@
 import React, { useState } from "react";
 import {
-  Text,
-  View,
-  StyleSheet,
+  Alert,
   Image,
+  StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
+  View,
 } from "react-native";
 
 import { FontAwesome5 } from "@expo/vector-icons";
+import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import appFirebase from "../credencials";
-import {
-  createUserWithEmailAndPassword,
-  getAuth,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
-
-const auth = getAuth(appFirebase);
 
 const strengthLabels = ["weak", "medium", "strong"];
+const auth = getAuth(appFirebase)
 
 const Register = (props) => {
   // States
@@ -50,7 +46,8 @@ const Register = (props) => {
 
   // Const to create account
   const createAccount = async () => {
-    (equlaPasswords = false), (weakPassword = true);
+    equlaPasswords = false;
+    weakPassword = true;
     error = "Error creating account";
 
     // Check if the passwords are equal
@@ -74,17 +71,38 @@ const Register = (props) => {
     if (equlaPasswords && !weakPassword && checkEmail(email)) {
       // Create the account
       await createUserWithEmailAndPassword(auth, email, password)
-      
         // Then navigate to home screen and show alert
         .then(() => {
           alert("Account created successfully");
           props.navigation.navigate("Home");
         })
-        
+
         // Catch the errors
         .catch((error) => {
+          console.log(error);
           if (error.code === "auth/email-already-in-use") {
-            alert("Email already in use");
+            Alert.alert(
+              "Error",
+              "The email address is already in use by another account.",
+              [
+                {
+                  text: "Ok",
+                  style: "cancel",
+                },
+                {
+                  text: "Forget Password?",
+                  onPress: () => props.navigation.navigate("ForgetPassword"),
+                  style: "cancel",
+                },
+              ],
+              {
+                cancelable: true,
+                onDismiss: () =>
+                  Alert.alert(
+                    "This alert was dismissed by tapping outside of the alert dialog."
+                  ),
+              }
+            );
           }
         });
     } else {

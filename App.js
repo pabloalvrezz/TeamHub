@@ -1,11 +1,12 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
 
 import Home from "./screens/Home";
 import Login from "./screens/Login";
 import Register from "./screens/Register";
+import ForgetPassword from "./screens/ForgetPassword";
 
 const Stack = createStackNavigator();
 
@@ -29,6 +30,18 @@ function MyStack() {
         component={Login}
         options={{
           title: "Login",
+          headerTintColor: "#000",
+          headerTitleAlign: "center",
+          headerStyle: {
+            backgroundColor: "#00b4d8",
+          },
+        }}
+      />
+      <Stack.Screen
+        name="ForgetPassword"
+        component={ForgetPassword}
+        options={{
+          title: "Forget Password",
           headerTintColor: "#000",
           headerTitleAlign: "center",
           headerStyle: {
