@@ -1,0 +1,350 @@
+import React, { useState } from "react";
+import {
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+import { FontAwesome5 } from "@expo/vector-icons";
+import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import appFirebase from "../credencials";
+
+const strengthLabels = ["weak", "medium", "strong"];
+const auth = getAuth(appFirebase)
+
+const Register = (props) => {
+  // States
+  const [strength, setStrength] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
+  const [showPassword1, setShowPassword1] = useState(false);
+  const [showPassword2, setShowPassword2] = useState(false);
+
+  // Const to toggle password visibility
+  const togglePasswordVisibility1 = () => {
+    setShowPassword1(!showPassword1);
+  };
+
+  // Const to toggle password visibility
+  const togglePasswordVisibility2 = () => {
+    setShowPassword2(!showPassword2);
+  };
+
+  // Const to navigate to login screen
+  const loginAccount = () => {
+    props.navigation.navigate("Login");
+  };
+
+  const checkEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  // Const to create account
+  const createAccount = async () => {
+    equlaPasswords = false;
+    weakPassword = true;
+    error = "Error creating account";
+
+    // Check if the passwords are equal
+    if (password !== repeatPassword) {
+      error = "Passwords do not match";
+    } else equlaPasswords = true;
+
+    // Check the strength of the password
+    if (strength !== "weak") {
+      weakPassword = false;
+    } else {
+      error = "Weak password";
+    }
+
+    // Check if the email is correct
+    if (!checkEmail(email)) {
+      error = "Email format is incorrect";
+    }
+
+    // Check all the conditions
+    if (equlaPasswords && !weakPassword && checkEmail(email)) {
+      // Create the account
+      await createUserWithEmailAndPassword(auth, email, password)
+        // Then navigate to home screen and show alert
+        .then(() => {
+          alert("Account created successfully");
+          props.navigation.navigate("Home");
+        })
+
+        // Catch the errors
+        .catch((error) => {
+          console.log(error);
+          if (error.code === "auth/email-already-in-use") {
+            Alert.alert(
+              "Error",
+              "The email address is already in use by another account.",
+              [
+                {
+                  text: "Ok",
+                  style: "cancel",
+                },
+                {
+                  text: "Forget Password?",
+                  onPress: () => props.navigation.navigate("ForgetPassword"),
+                  style: "cancel",
+                },
+              ],
+              {
+                cancelable: true,
+                onDismiss: () =>
+                  Alert.alert(
+                    "This alert was dismissed by tapping outside of the alert dialog."
+                  ),
+              }
+            );
+          }
+        });
+    } else {
+      alert(error);
+    }
+  };
+
+  const getStrength = (password) => {
+    let strengthIndicator = -1;
+    let upper = false,
+      lower = false,
+      numbers = false,
+      special = false;
+
+    for (let index = 0; index < password.length; index++) {
+      let char = password.charCodeAt(index);
+      const passwordLength = password.length;
+
+      // Uppercase characters
+      if (!upper && char >= 65 && char <= 90) {
+        upper = true;
+        strengthIndicator++;
+      }
+
+      // Numbers
+      if (!numbers && char >= 48 && char <= 57) {
+        numbers = true;
+        strengthIndicator++;
+      }
+
+      // Lowercase characters
+      if (!lower && char >= 97 && char <= 122) {
+        lower = true;
+        strengthIndicator++;
+      }
+
+      // Special characters
+      if (
+        !special &&
+        ((char >= 33 && char <= 47) ||
+          (char >= 58 && char <= 64) ||
+          (char >= 91 && char <= 96) ||
+          (char >= 123 && char <= 126))
+      ) {
+        special = true;
+        strengthIndicator++;
+      }
+    }
+
+    setStrength(strengthLabels[strengthIndicator] ?? "");
+  };
+
+  const handleChange = (password) => {
+    getStrength(password);
+    setPassword(password);
+  };
+
+  return (
+    <View style={styles.container}>
+      <Image
+        source={require("../assets/HelmetLogo.webp")}
+        style={styles.profile}
+      />
+
+      <View style={styles.card}>
+        <View style={styles.inputField}>
+          <TextInput
+            placeholder="Email"
+            style={styles.input}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            onChangeText={(email) => setEmail(email)}
+          />
+          <View style={styles.inputFieldIcon}>
+            <FontAwesome5 name="envelope" size={20} color="grey" />
+          </View>
+        </View>
+
+        <View style={styles.inputField}>
+          <TextInput
+            placeholder="Password"
+            style={styles.input}
+            secureTextEntry={!showPassword1}
+            onChangeText={(password) => {
+              handleChange(password), setPassword(password);
+            }}
+          />
+          <TouchableOpacity
+            style={styles.inputFieldIcon}
+            onPress={togglePasswordVisibility1}
+          >
+            <FontAwesome5
+              name={showPassword1 ? "eye" : "eye-slash"}
+              size={20}
+              color="grey"
+            />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.inputField}>
+          <TextInput
+            placeholder="Repeat Password"
+            style={styles.input}
+            secureTextEntry={!showPassword2}
+            onChangeText={(repeatPassword) => setRepeatPassword(repeatPassword)}
+          />
+          <TouchableOpacity
+            style={styles.inputFieldIcon}
+            onPress={togglePasswordVisibility2}
+          >
+            <FontAwesome5
+              name={showPassword2 ? "eye" : "eye-slash"}
+              size={20}
+              color="grey"
+            />
+          </TouchableOpacity>
+        </View>
+
+        <View style={[styles.bars, styles[strength]]}>
+          <View style={styles.bar}></View>
+        </View>
+        <Text style={styles.strength}>
+          {strength && `${strength} password`}
+        </Text>
+
+        <View style={styles.buttonBox}>
+          <TouchableOpacity style={styles.button} onPress={createAccount}>
+            <Text style={styles.buttonText}>Register</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.separator}></View>
+
+        <View style={styles.registerBox}>
+          <Text>Do you already have one? </Text>
+          <TouchableOpacity onPress={loginAccount}>
+            <Text style={{ color: "#00b4d8" }}>Login</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+  },
+  profile: {
+    width: 120,
+    height: 120,
+    borderRadius: 50,
+  },
+  card: {
+    margin: 20,
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    width: "90%",
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.96,
+    elevation: 5,
+  },
+  inputField: {
+    paddingVertical: 20,
+    backgroundColor: "#cccccc",
+    borderRadius: 30,
+    marginVertical: 10,
+  },
+  inputFieldIcon: {
+    position: "absolute",
+    right: 20,
+    top: "80%",
+  },
+  input: {
+    paddingHorizontal: 15,
+  },
+  buttonBox: {
+    alignItems: "center",
+  },
+  button: {
+    backgroundColor: "#00b4d8",
+    fontWeight: "bold",
+    borderRadius: 30,
+    paddingVertical: 20,
+    width: "90%",
+    marginTop: 20,
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  buttonText: {
+    color: "black",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  separator: {
+    borderBottomWidth: 1,
+    borderBottomColor: "gray",
+    marginVertical: 10,
+  },
+  registerBox: {
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  bars: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 5,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#dfe1f0",
+  },
+  bar: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#ffffff",
+    transition: "width 0.4s",
+    width: 0,
+  },
+  strength: {
+    textAlign: "left",
+    height: 30,
+    textTransform: "capitalize",
+    color: "#868b94",
+  },
+  weak: {
+    backgroundColor: "#e24c71",
+  },
+  medium: {
+    backgroundColor: "#f39845",
+  },
+  strong: {
+    backgroundColor: "#57c558",
+  },
+});
+
+export default Register;
