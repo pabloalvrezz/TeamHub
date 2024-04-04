@@ -1,7 +1,7 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-
-import { StyleSheet } from "react-native";
+import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import Home from "./screens/Home";
 import Login from "./screens/Login";
@@ -10,74 +10,48 @@ import ForgetPassword from "./screens/ForgetPassword";
 
 const Stack = createStackNavigator();
 
-function MyStack() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="Register"
-        component={Register}
-        options={{
-          title: "Register",
-          headerTintColor: "#000",
-          headerTitleAlign: "center",
-          headerStyle: {
-            backgroundColor: "#00b4d8",
-          },
-        }}
-      />
-      <Stack.Screen
-        name="Login"
-        component={Login}
-        options={{
-          title: "Login",
-          headerTintColor: "#000",
-          headerTitleAlign: "center",
-          headerStyle: {
-            backgroundColor: "#00b4d8",
-          },
-        }}
-      />
-      <Stack.Screen
-        name="ForgetPassword"
-        component={ForgetPassword}
-        options={{
-          title: "Forget Password",
-          headerTintColor: "#000",
-          headerTitleAlign: "center",
-          headerStyle: {
-            backgroundColor: "#00b4d8",
-          },
-        }}
-      />
-      <Stack.Screen
-        name="Home"
-        component={Home}
-        options={{
-          title: "Home",
-          headerTintColor: "#000",
-          headerTitleAlign: "center",
-          headerStyle: {
-            backgroundColor: "#00b4d8",
-          },
-        }}
-      />
-    </Stack.Navigator>
-  );
-}
-
-export default function App() {
+function MyStack({ userLoggedIn }) {
   return (
     <NavigationContainer>
-      <MyStack />
+      <Stack.Navigator>
+        {userLoggedIn ? (
+          <Stack.Screen name="Home" component={Home} />
+        ) : (
+          <>
+            <Stack.Screen
+              name="Login"
+              component={Login}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Register"
+              component={Register}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="ForgetPassword"
+              component={ForgetPassword}
+              options={{ headerShown: false }}
+            />
+          </>
+        )}
+      </Stack.Navigator>
     </NavigationContainer>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#ffffff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
+export default function App() {
+  const [userLoggedIn, setUserLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Check if the user is logged in
+    AsyncStorage.getItem("userLoggedIn").then((value) => {
+      if (value === "true") {
+        // The user is logged in
+        setUserLoggedIn(true);
+      }
+    });
+  }, []);
+
+  return <MyStack userLoggedIn={userLoggedIn} />;
+}

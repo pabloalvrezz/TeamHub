@@ -10,7 +10,9 @@ import {
 } from "react-native";
 
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { FontAwesome5 } from "@expo/vector-icons";
 import appFirebase from "../credencials";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const auth = getAuth(appFirebase);
 
@@ -18,6 +20,12 @@ export default function Login(props) {
   // Create the state variables
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword1, setShowPassword1] = useState(false);
+
+  // Const to toggle password visibility
+  const togglePasswordVisibility1 = () => {
+    setShowPassword1(!showPassword1);
+  };
 
   const createAccount = () => {
     props.navigation.navigate("Register");
@@ -27,8 +35,17 @@ export default function Login(props) {
   const login = async () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
+
+      // Clean the inputs
+      setEmail("");
+      setPassword("");
+
       Alert.alert("Success", "Login...");
 
+      // Save the user as logged in
+      await AsyncStorage.setItem("userLoggedIn", "true");
+
+      // Navigate to the home screen
       props.navigation.navigate("Home");
     } catch (error) {
       let errorMessage = "Error de inicio de sesión";
@@ -50,8 +67,6 @@ export default function Login(props) {
           break;
       }
 
-      // Show the error message in console and alert
-      console.log(errorMessage);
       Alert.alert("Error", errorMessage);
     }
   };
@@ -69,20 +84,35 @@ export default function Login(props) {
         <View style={styles.inputField}>
           <TextInput
             placeholder="Email"
-            style={{ paddingHorizontal: 15 }}
+            style={styles.input}
             keyboardType="email-address"
             autoCapitalize="none"
             onChangeText={(email) => setEmail(email)}
           />
+          <View style={styles.inputFieldIcon}>
+            <FontAwesome5 name="envelope" size={20} color="grey" />
+          </View>
         </View>
 
         <View style={styles.inputField}>
           <TextInput
             placeholder="Password"
-            style={{ paddingHorizontal: 15 }}
-            secureTextEntry={true}
-            onChangeText={(password) => setPassword(password)}
+            style={styles.input}
+            secureTextEntry={!showPassword1}
+            onChangeText={(password) => {
+              setPassword(password);
+            }}
           />
+          <TouchableOpacity
+            style={styles.inputFieldIcon}
+            onPress={togglePasswordVisibility1}
+          >
+            <FontAwesome5
+              name={showPassword1 ? "eye" : "eye-slash"}
+              size={20}
+              color="grey"
+            />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.buttonBox}>
@@ -139,6 +169,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#cccccc",
     borderRadius: 30,
     marginVertical: 10,
+  },
+  inputFieldIcon: {
+    position: "absolute",
+    right: 20,
+    top: "80%",
+  },
+  input: {
+    paddingHorizontal: 15,
   },
   buttonBox: {
     alignItems: "center",
