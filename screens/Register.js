@@ -7,6 +7,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from "react-native";
 
 import { FontAwesome5 } from "@expo/vector-icons";
@@ -24,6 +25,7 @@ const Register = (props) => {
   const [repeatPassword, setRepeatPassword] = useState("");
   const [showPassword1, setShowPassword1] = useState(false);
   const [showPassword2, setShowPassword2] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Const to toggle password visibility
   const togglePasswordVisibility1 = () => {
@@ -69,17 +71,24 @@ const Register = (props) => {
 
     // Check all the conditions
     if (equlaPasswords && !weakPassword && checkEmail(email)) {
+      
+      setLoading(true); // Set the loading state to true when the account creation process starts
+      
       // Create the account
       await createUserWithEmailAndPassword(auth, email, password)
         // Then navigate to home screen and show alert
         .then(() => {
+
+          setLoading(false); // Set the loading state to false when the account creation process ends
           alert("Account created successfully");
           props.navigation.navigate("Home");
         })
 
         // Catch the errors
         .catch((error) => {
-          console.log(error);
+          
+          setLoading(false); // Set the loading state to false when the account creation process ends
+
           if (error.code === "auth/email-already-in-use") {
             Alert.alert(
               "Error",
@@ -229,9 +238,13 @@ const Register = (props) => {
         </Text>
 
         <View style={styles.buttonBox}>
-          <TouchableOpacity style={styles.button} onPress={createAccount}>
-            <Text style={styles.buttonText}>Register</Text>
-          </TouchableOpacity>
+          {loading ? (
+            <ActivityIndicator color="black" />
+          ) : (
+            <TouchableOpacity style={styles.button} onPress={createAccount}>
+              <Text style={styles.buttonText}>Log in</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.separator}></View>

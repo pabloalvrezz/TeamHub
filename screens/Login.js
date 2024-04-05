@@ -7,22 +7,21 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  ActivityIndicator, // Importa ActivityIndicator para el loader
 } from "react-native";
 
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { FontAwesome5 } from "@expo/vector-icons";
 import appFirebase from "../credencials";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const auth = getAuth(appFirebase);
 
 export default function Login(props) {
-  // Create the state variables
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword1, setShowPassword1] = useState(false);
+  const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga del inicio de sesión
 
-  // Const to toggle password visibility
   const togglePasswordVisibility1 = () => {
     setShowPassword1(!showPassword1);
   };
@@ -31,35 +30,33 @@ export default function Login(props) {
     props.navigation.navigate("Register");
   };
 
-  // Create the login function
   const login = async () => {
     try {
+      setLoading(true); // Set the loading state to true when the login process starts
       await signInWithEmailAndPassword(auth, email, password);
-
       setEmail("");
       setPassword("");
+      setLoading(false); // Set the loading state to false when the login process ends
 
       Alert.alert("Success", "Login...");
-
-      // Navigate to the home screen
       props.navigation.navigate("Home");
     } catch (error) {
+      setLoading(false); // Set the loading state to false when the login process ends
       let errorMessage = "Error de inicio de sesión";
 
-      // Check the error code
       switch (error.code) {
         case "auth/user-not-found":
         case "auth/invalid-email":
-          errorMessage = "Wrong Email ";
+          errorMessage = "Correo electrónico incorrecto";
           break;
         case "auth/wrong-password":
-          errorMessage = "Wrong Password";
+          errorMessage = "Contraseña incorrecta";
           break;
         case "auth/invalid-credential":
-          errorMessage = "Invalid Credentials";
+          errorMessage = "Credenciales inválidas";
           break;
         default:
-          errorMessage = "Login Error";
+          errorMessage = "Error de inicio de sesión";
           break;
       }
 
@@ -99,9 +96,7 @@ export default function Login(props) {
             style={styles.input}
             secureTextEntry={!showPassword1}
             value={password}
-            onChangeText={(password) => {
-              setPassword(password);
-            }}
+            onChangeText={(password) => setPassword(password)}
           />
           <TouchableOpacity
             style={styles.inputFieldIcon}
@@ -116,19 +111,21 @@ export default function Login(props) {
         </View>
 
         <View style={styles.buttonBox}>
-          <TouchableOpacity style={styles.button} onPress={login}>
-            <Text style={styles.buttonText}>Sign In</Text>
-          </TouchableOpacity>
+          {loading ? (
+            <ActivityIndicator color="black" />
+          ) : (
+            <TouchableOpacity style={styles.button} onPress={login}>
+              <Text style={styles.buttonText}>Log in</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.separator}></View>
 
         <View style={styles.registerBox}>
           <Text>Or create one </Text>
-          <TouchableOpacity>
-            <Text onPress={createAccount} style={{ color: "#00b4d8" }}>
-              herer
-            </Text>
+          <TouchableOpacity onPress={createAccount}>
+            <Text style={{ color: "#00b4d8" }}>here</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -141,7 +138,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#000",
+    backgroundColor: "#ffffff",
   },
   profile: {
     width: 120,
