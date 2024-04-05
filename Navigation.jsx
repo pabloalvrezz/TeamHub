@@ -16,10 +16,16 @@ import { createMaterialBottomTabNavigator } from "@react-navigation/material-bot
 const Stack = createStackNavigator();
 const Tabs = createMaterialBottomTabNavigator();
 
-export default function MyStack() {
+export default function MyStack(props) {
   return (
     <NavigationContainer>
       <Stack.Navigator>
+        <Stack.Screen
+          name="App"
+          options={{ headerShown: false }}
+          component={MyTabs}
+          {...props}
+        />
         <Stack.Screen
           name="Login"
           component={Login}
@@ -35,60 +41,65 @@ export default function MyStack() {
           component={ForgetPassword}
           options={{ headerShown: false }}
         />
-        <Stack.Screen
-          name="App"
-          options={{ headerShown: false }}
-          component={MyTabs}
-        />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
 
-function MyTabs() {
-  
-    return (
-      <Tabs.Navigator
-        initialRouteName="Home"
-        shifting={true}
-        barStyle={{ backgroundColor: "#fff" }}
-      >
-        <Tabs.Screen
-          name="Home"
-          component={Home}
-          options={{
-            tabBarIcon: ({ color }) => (
-              <MaterialCommunityIcons name="home" color={color} size={26} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="Team"
-          component={Team}
-          options={{
-            tabBarIcon: ({ color }) => (
-              <MaterialCommunityIcons name="account-group" color={color} size={26} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="Stats"
-          component={Statistics}
-          options={{
-            tabBarIcon: ({ color }) => (
-              <MaterialCommunityIcons name="chart-pie" color={color} size={26} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="Profile"
-          component={Profile}
-          options={{
-            tabBarIcon: ({ color }) => (
-              <MaterialCommunityIcons name="account" color={color} size={26} />
-            ),
-          }}
-        />
-      </Tabs.Navigator>
-    );
-  }
+function MyTabs(props) {
+  return (
+    <Tabs.Navigator
+      initialRouteName="Home"
+      shifting={true}
+      barStyle={{
+        backgroundColor: "#fff",
+        borderTopColor: "#00b4d8",
+        borderTopWidth: 1,
+      }}
+      activeColor="#00b4d8"
+      inactiveColor="gray"
+    >
+      <Tabs.Screen
+        name="Home"
+        component={Home}
+        options={{
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="home" color={color} size={26} />
+          ),
+        }}
+        propsº={props}
+      />
+      <Tabs.Screen
+        name="Team"
+        component={Team}
+        options={{
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons
+              name="account-group"
+              color={color}
+              size={26}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="Stats"
+        component={Statistics}
+        options={{
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="chart-pie" color={color} size={26} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="Profile"
+        component={Profile}
+        options={{
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="account" color={color} size={26} />
+          ),
+        }}
+      />
+    </Tabs.Navigator>
+  );
+}

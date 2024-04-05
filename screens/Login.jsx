@@ -13,10 +13,12 @@ import {
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { FontAwesome5 } from "@expo/vector-icons";
 import appFirebase from "../credencials";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const auth = getAuth(appFirebase);
 
 export default function Login(props) {
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword1, setShowPassword1] = useState(false);
@@ -34,11 +36,14 @@ export default function Login(props) {
     try {
       setLoading(true); // Set the loading state to true when the login process starts
       await signInWithEmailAndPassword(auth, email, password);
+
       setEmail("");
       setPassword("");
+
       setLoading(false); // Set the loading state to false when the login process ends
 
-      Alert.alert("Success", "Login...");
+      await AsyncStorage.setItem("isLoggedIn", "true"); // Set the isLoggedIn key to true in AsyncStorage
+
       props.navigation.navigate("App");
     } catch (error) {
       setLoading(false); // Set the loading state to false when the login process ends
@@ -56,7 +61,7 @@ export default function Login(props) {
           errorMessage = "Invalid credentials";
           break;
         default:
-          errorMessage = "Login error";
+          errorMessage = "Login error!";
           break;
       }
 

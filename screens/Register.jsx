@@ -13,6 +13,7 @@ import {
 import { FontAwesome5 } from "@expo/vector-icons";
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import appFirebase from "../credencials";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const strengthLabels = ["weak", "medium", "strong"];
 const auth = getAuth(appFirebase);
@@ -45,7 +46,7 @@ const Register = (props) => {
   // Const to check email
   const checkEmail = (email) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };  
+  };
 
   // Const to create account
   const createAccount = async () => {
@@ -74,18 +75,20 @@ const Register = (props) => {
     if (equlaPasswords && !weakPassword && checkEmail(email)) {
       setLoading(true); // Set the loading state to true when the account creation process starts
 
+      await AsyncStorage.setItem("isLoggedIn", "true");
+
       // Create the account
       await createUserWithEmailAndPassword(auth, email, password)
         // Then navigate to home screen and show alert
         .then(() => {
-          setLoading(false); // Set the loading state to false when the account creation process ends
-          alert("Account created successfully");
+          setLoading(false);
+
           props.navigation.navigate("App");
         })
 
         // Catch the errors
         .catch((error) => {
-          setLoading(false); // Set the loading state to false when the account creation process ends
+          setLoading(false);
 
           if (error.code === "auth/email-already-in-use") {
             Alert.alert(
@@ -101,14 +104,7 @@ const Register = (props) => {
                   onPress: () => props.navigation.navigate("ForgetPassword"),
                   style: "cancel",
                 },
-              ],
-              {
-                cancelable: true,
-                onDismiss: () =>
-                  Alert.alert(
-                    "This alert was dismissed by tapping outside of the alert dialog."
-                  ),
-              }
+              ]
             );
           }
         });

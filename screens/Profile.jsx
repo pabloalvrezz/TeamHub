@@ -10,6 +10,7 @@ export default function Profile() {
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: "#fff",
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
