@@ -39,24 +39,24 @@ export default function Login(props) {
       setLoading(false); // Set the loading state to false when the login process ends
 
       Alert.alert("Success", "Login...");
-      props.navigation.navigate("Home");
+      props.navigation.navigate("App");
     } catch (error) {
       setLoading(false); // Set the loading state to false when the login process ends
-      let errorMessage = "Error de inicio de sesión";
+      let errorMessage = "Login error";
 
       switch (error.code) {
         case "auth/user-not-found":
         case "auth/invalid-email":
-          errorMessage = "Correo electrónico incorrecto";
+          errorMessage = "Incorrect email";
           break;
         case "auth/wrong-password":
-          errorMessage = "Contraseña incorrecta";
+          errorMessage = "Incorrect password";
           break;
         case "auth/invalid-credential":
-          errorMessage = "Credenciales inválidas";
+          errorMessage = "Invalid credentials";
           break;
         default:
-          errorMessage = "Error de inicio de sesión";
+          errorMessage = "Login error";
           break;
       }
 
