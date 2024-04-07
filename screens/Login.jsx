@@ -43,7 +43,9 @@ export default function Login(props) {
       setLoading(false); // Set the loading state to false when the login process ends
 
       await AsyncStorage.setItem("isLoggedIn", "true"); // Set the isLoggedIn key to true in AsyncStorage
-
+      await AsyncStorage.setItem("userData",JSON.stringify(auth.currentUser))
+      
+      
       props.navigation.navigate("App");
     } catch (error) {
       setLoading(false); // Set the loading state to false when the login process ends

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "80608880736",
+    "project_id": "teamhub-8ab29",
+    "storage_bucket": "teamhub-8ab29.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:80608880736:android:5662755c4ade9810257b05",
+        "android_client_info": {
+          "package_name": "com.teamhub.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkE3piyU6IgkM3FonO974X___qgAUNrRI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

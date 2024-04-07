@@ -8,14 +8,22 @@ const auth = getAuth(appFirebase);
 
 export default function Home({ navigation }) {
   const [user, setUser] = useState(null);
+  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
     const checkLoggedIn = async () => {
+      const userData = await AsyncStorage.getItem("userData");
+
+      if (userData) {
+        setUserData(JSON.parse(userData)); // Parse the string to object
+      }
+
       const isLoggedIn = await AsyncStorage.getItem("isLoggedIn");
       if (!isLoggedIn) {
         navigation.navigate("Login");
       }
     };
+
     checkLoggedIn();
 
     // Use onAuthStateChanged to listen for authentication state changes
@@ -36,15 +44,13 @@ export default function Home({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Display user's information */}
-      {user && (
-        <View>
-         
-          <TouchableOpacity onPress={logOut} style={styles.button}>
-            <Text style={{ color: "#fff" }}>Log out</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      <TouchableOpacity
+        onPress={() => {
+          logOut();
+        }}
+      >
+        <Text style={styles.userInfo}>Home</Text>
+      </TouchableOpacity>
     </View>
   );
 }

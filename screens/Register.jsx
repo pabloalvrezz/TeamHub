@@ -11,7 +11,11 @@ import {
 } from "react-native";
 
 import { FontAwesome5 } from "@expo/vector-icons";
-import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  updateProfile,
+} from "firebase/auth";
 import appFirebase from "../credencials";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -23,6 +27,7 @@ const Register = (props) => {
   const [strength, setStrength] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUserName] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [showPassword1, setShowPassword1] = useState(false);
   const [showPassword2, setShowPassword2] = useState(false);
@@ -54,6 +59,11 @@ const Register = (props) => {
     weakPassword = true;
     error = "Error creating account";
 
+    // Check if the username is empty
+    if (username === "") {
+      error = "Username is empty";
+    }
+
     // Check if the passwords are equal
     if (password !== repeatPassword) {
       error = "Passwords do not match";
@@ -77,42 +87,60 @@ const Register = (props) => {
 
       await AsyncStorage.setItem("isLoggedIn", "true");
 
-      // Create the account
-      await createUserWithEmailAndPassword(auth, email, password)
-        // Then navigate to home screen and show alert
-        .then(() => {
-          setLoading(false);
+      try {
+        // Create a new user
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
 
-          props.navigation.navigate("App");
-        })
-
-        // Catch the errors
-        .catch((error) => {
-          setLoading(false);
-
-          if (error.code === "auth/email-already-in-use") {
-            Alert.alert(
-              "Error",
-              "The email address is already in use by another account.",
-              [
-                {
-                  text: "Ok",
-                  style: "cancel",
-                },
-                {
-                  text: "Forget Password?",
-                  onPress: () => props.navigation.navigate("ForgetPassword"),
-                  style: "cancel",
-                },
-              ]
-            );
-          }
+        // Update the user's profile
+        await updateProfile(userCredential.user, {
+          displayName: username,
         });
+
+        setLoading(false);
+
+        // Save the isLoggedIn key to true in AsyncStorage
+        await AsyncStorage.setItem("isLoggedIn", "true");
+        await AsyncStorage.setItem("userData", JSON.stringify(userCredential.user));
+        
+        props.navigation.navigate("App");
+      } catch (error) {
+        setLoading(false);
+
+        if (error.code === "auth/email-already-in-use") {
+          Alert.alert(
+            "Error",
+            "The email address is already in use by another account.",
+            [
+              {
+                text: "Ok",
+                style: "cancel",
+              },
+              {
+                text: "Forget Password?",
+                onPress: () => props.navigation.navigate("ForgetPassword"),
+                style: "cancel",
+              },
+            ]
+          );
+        } else {
+          // Maneja otros errores
+          console.error("Error creating account:", error);
+          alert("Error creating account");
+        }
+      }
     } else {
       alert(error);
     }
   };
 
+  /**
+   * Check the strength of the password
+   * @param {*} password 
+   */
   const getStrength = (password) => {
     let strengthIndicator = -1;
     let upper = false,
@@ -170,6 +198,19 @@ const Register = (props) => {
       />
 
       <View style={styles.card}>
+        <View style={styles.inputField}>
+          <TextInput
+            placeholder="User"
+            style={styles.input}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            onChangeText={(username) => setUserName(username)}
+          />
+          <View style={styles.inputFieldIcon}>
+            <FontAwesome5 name="user" size={20} color="grey" />
+          </View>
+        </View>
+
         <View style={styles.inputField}>
           <TextInput
             placeholder="Email"
