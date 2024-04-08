@@ -13,14 +13,16 @@ import {
 } from "react-native";
 
 import { firebase } from "@react-native-firebase/storage";
-import { updateProfile } from "firebase/auth";
+import { sendEmailVerification, updateProfile } from "firebase/auth";
 import { auth } from "./Login";
+import { Modal } from "react-native-paper";
 
 export default function Profile({ navigation }) {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [displayName, setDisplayName] = useState(auth.currentUser.displayName);
   const [email, setEmail] = useState(auth.currentUser.email);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -115,6 +117,16 @@ export default function Profile({ navigation }) {
     }
   };
 
+  // Function to open modal to verify email
+  const openModal = () => {
+    setVisible(true);
+  };
+
+  // Function to hide modal
+  const hideModal = () => {
+    setVisible(false);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.profilePhoto}>
@@ -135,6 +147,13 @@ export default function Profile({ navigation }) {
         <TouchableOpacity style={styles.uploadButton} onPress={selectImage}>
           <FontAwesome5 name="plus" size={13} color="#fff" />
         </TouchableOpacity>
+        {auth.currentUser.emailVerified ? (
+          <View style={styles.verifiedStatus}></View>
+        ) : (
+          <TouchableOpacity onPress={openModal}>
+            <View style={styles.unverifiedStatus}></View>
+          </TouchableOpacity>
+        )}
       </View>
 
       <View style={styles.card}>
@@ -170,7 +189,7 @@ export default function Profile({ navigation }) {
                 setTimeout(() => {
                   saveProfile(userData.photoURL);
                 }, 500);
-                
+
                 updateProfile(auth.currentUser, {
                   displayName: displayName,
                   email: email,
@@ -183,6 +202,21 @@ export default function Profile({ navigation }) {
           )}
         </View>
       </View>
+
+      <Modal
+        visible={visible}
+        onDismiss={hideModal}
+        contentContainerStyle={styles.modal}
+      >
+        <Text>Verified email to change the status</Text>
+        <TouchableOpacity style={styles.buttonEmail} onPress={() =>{
+          sendEmailVerification(auth.currentUser);
+          hideModal();
+          alert("Email verification sent");
+        }}>
+          <Text style={styles.buttonEmailText}>Send Email Verification</Text>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -194,6 +228,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#ffffff",
   },
+
   profilePhoto: {
     width: 120,
     height: 120,
@@ -208,6 +243,53 @@ const styles = StyleSheet.create({
     padding: 5,
     backgroundColor: "#00b4d8",
   },
+  
+  modal: {
+    position: "absolute",
+    backgroundColor: "rgba(255,255, 255, 0.7)",
+    padding: 20,
+    borderRadius: 30,
+    left: "25%", 
+    width: "50%",
+    height: "20%",
+    justifyContent: "center",
+  },
+
+  buttonEmail: {
+    backgroundColor: "#00b4d8",
+    padding: 10,
+    borderRadius: 5,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+
+  buttonEmailText: {
+    color: "#fff",
+    fontSize: 10,
+  },
+
+  verifiedStatus: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    height: 23,
+    width: 23,
+    borderRadius: 100,
+    padding: 5,
+    backgroundColor: "green",
+  },
+
+  unverifiedStatus: {
+    position: "absolute",
+    left: 0,
+    top: -120,
+    height: 23,
+    width: 23,
+    borderRadius: 100,
+    padding: 5,
+    backgroundColor: "red",
+  },
+
   card: {
     margin: 20,
     backgroundColor: "#ffffff",
@@ -223,23 +305,28 @@ const styles = StyleSheet.create({
     shadowRadius: 3.96,
     elevation: 5,
   },
+
   inputField: {
     paddingVertical: 20,
     backgroundColor: "#cccccc",
     borderRadius: 30,
     marginVertical: 10,
   },
+
   inputFieldIcon: {
     position: "absolute",
     right: 20,
     top: "80%",
   },
+
   input: {
     paddingHorizontal: 15,
   },
+
   buttonBox: {
     alignItems: "center",
   },
+
   button: {
     backgroundColor: "#00b4d8",
     fontWeight: "bold",
@@ -250,48 +337,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
   },
+
   buttonText: {
     color: "black",
     fontWeight: "bold",
     textAlign: "center",
   },
-  separator: {
-    borderBottomWidth: 1,
-    borderBottomColor: "gray",
-    marginVertical: 10,
-  },
+
   registerBox: {
     flexDirection: "row",
     justifyContent: "center",
-  },
-  bars: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 5,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: "#dfe1f0",
-  },
-  bar: {
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: "#ffffff",
-    transition: "width 0.4s",
-    width: 0,
-  },
-  strength: {
-    textAlign: "left",
-    height: 30,
-    textTransform: "capitalize",
-    color: "#868b94",
-  },
-  weak: {
-    backgroundColor: "#e24c71",
-  },
-  medium: {
-    backgroundColor: "#f39845",
-  },
-  strong: {
-    backgroundColor: "#57c558",
   },
 });

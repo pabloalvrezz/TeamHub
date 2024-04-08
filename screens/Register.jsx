@@ -96,8 +96,6 @@ const Register = (props) => {
           password
         );
 
-        await sendEmailVerification(userCredential.user);
-
         // Update the user's profile
         await updateProfile(userCredential.user, {
           displayName: username,
@@ -282,7 +280,7 @@ const Register = (props) => {
             <ActivityIndicator color="black" />
           ) : (
             <TouchableOpacity style={styles.button} onPress={createAccount}>
-              <Text style={styles.buttonText}>Log in</Text>
+              <Text style={styles.buttonText}>Register</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -292,7 +290,7 @@ const Register = (props) => {
         <View style={styles.registerBox}>
           <Text>Do you already have one? </Text>
           <TouchableOpacity onPress={loginAccount}>
-            <Text style={{ color: "#00b4d8" }}>Login</Text>
+            <Text style={{ color: "#00b4d8" }}>Log in</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -391,12 +389,15 @@ const styles = StyleSheet.create({
   },
   weak: {
     backgroundColor: "#e24c71",
+    width: "33%",
   },
   medium: {
     backgroundColor: "#f39845",
+    width: "66%",
   },
   strong: {
     backgroundColor: "#57c558",
+    
   },
 });
 
