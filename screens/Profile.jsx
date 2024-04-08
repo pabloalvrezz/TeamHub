@@ -16,6 +16,16 @@ import { firebase } from "@react-native-firebase/storage";
 import { sendEmailVerification, updateProfile } from "firebase/auth";
 import { auth } from "./Login";
 import { Modal } from "react-native-paper";
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 
 export default function Profile({ navigation }) {
   const [userData, setUserData] = useState(null);
@@ -75,7 +85,8 @@ export default function Profile({ navigation }) {
                 ...prevUserData,
                 photoURL: url,
               }));
-              saveProfile(url);
+
+              updateProfilePhoto(url);
             });
             setLoading(false);
           })
@@ -103,17 +114,65 @@ export default function Profile({ navigation }) {
     });
   };
 
-  const saveProfile = async (photoURL) => {
+  // Function to update profile photo
+  const updateProfilePhoto = async (photoURL) => {
     try {
       setLoading(true);
       await updateProfile(auth.currentUser, {
-        displayName: displayName,
-        email: email,
         photoURL: photoURL,
       });
       setLoading(false);
+
+      updateProfileDataBase();
     } catch (error) {
       alert(error);
+    }
+  };
+
+  // Function to update profile email
+  const updateProfileEmail = async (email) => {
+    try {
+      setLoading(true);
+
+      await updateProfile(auth.currentUser, {
+        email: email,
+      });
+
+      await auth.currentUser.sendEmailVerification();
+
+      setLoading(false);
+    } catch (error) {
+      alert(error);
+    }
+  };
+
+  // Function to update the user on the database
+  const updateProfileDataBase = async () => {
+    try {
+      const uid = auth.currentUser.uid;
+
+      const db = getFirestore();
+      const userRef = doc(db, "users", uid);
+
+      await updateDoc(
+        userRef,
+        {
+          uid: uid,
+          displayName: displayName,
+          email: email,
+          photoURL: auth.currentUser.photoURL,
+        },
+        { merge: true }
+      );
+
+      setUserData((prevUserData) => ({
+        ...prevUserData,
+        displayName: displayName,
+        email: email,
+        photoURL: auth.currentUser.photoURL,
+      }));
+    } catch (error) {
+      alert("Error updating user profile in Firestore:");
     }
   };
 
@@ -209,12 +268,15 @@ export default function Profile({ navigation }) {
         contentContainerStyle={styles.modal}
       >
         <Text>Verified email to change the status</Text>
-        <TouchableOpacity style={styles.buttonEmail} onPress={() =>{
-          sendEmailVerification(auth.currentUser);
-          hideModal();
-          alert("Email verification sent");
-        }}>
-          <Text style={styles.buttonEmailText}>Send Email Verification</Text>
+        <TouchableOpacity
+          style={styles.buttonEmail}
+          onPress={() => {
+            sendEmailVerification(auth.currentUser);
+            hideModal();
+            alert("Email verification sent");
+          }}
+        >
+          1<Text style={styles.buttonEmailText}>Send Email Verification</Text>
         </TouchableOpacity>
       </Modal>
     </View>
@@ -243,13 +305,13 @@ const styles = StyleSheet.create({
     padding: 5,
     backgroundColor: "#00b4d8",
   },
-  
+
   modal: {
     position: "absolute",
     backgroundColor: "rgba(255,255, 255, 0.7)",
     padding: 20,
     borderRadius: 30,
-    left: "25%", 
+    left: "25%",
     width: "50%",
     height: "20%",
     justifyContent: "center",

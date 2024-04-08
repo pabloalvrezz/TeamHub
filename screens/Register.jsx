@@ -14,11 +14,17 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import {
   createUserWithEmailAndPassword,
   getAuth,
-  sendEmailVerification,
   updateProfile,
 } from "firebase/auth";
 import appFirebase from "../credencials";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  setDoc,
+  doc,
+} from "firebase/firestore";
 
 const strengthLabels = ["weak", "medium", "strong"];
 const auth = getAuth(appFirebase);
@@ -101,6 +107,19 @@ const Register = (props) => {
           displayName: username,
         });
 
+        // Save the user data to Firestore
+        const db = getFirestore();
+        const usersRef = collection(db, "users");
+
+        const userID = userCredential.user.uid;
+
+        await setDoc(doc(usersRef, userID), {
+          uid: userID,
+          displayName: username,
+          email: email,
+          photoURL: "",
+        });
+
         setLoading(false);
 
         // Save the isLoggedIn key to true in AsyncStorage
@@ -131,7 +150,7 @@ const Register = (props) => {
             ]
           );
         } else {
-          // Maneja otros errores
+          // Handle other errors
           console.error("Error creating account:", error);
           alert("Error creating account");
         }
@@ -397,7 +416,6 @@ const styles = StyleSheet.create({
   },
   strong: {
     backgroundColor: "#57c558",
-    
   },
 });
 

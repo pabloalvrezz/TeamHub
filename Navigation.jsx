@@ -12,6 +12,7 @@ import Statistics from "./screens/Statistics";
 import Profile from "./screens/Profile";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
+import Search from "./screens/Search";
 
 const Stack = createStackNavigator();
 const Tabs = createMaterialBottomTabNavigator();
@@ -79,6 +80,15 @@ function MyTabs(props) {
               color={color}
               size={26}
             />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="Search"
+        component={Search}
+        options={{
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="magnify" color={color} size={26} />
           ),
         }}
       />
