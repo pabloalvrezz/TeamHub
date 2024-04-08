@@ -15,7 +15,7 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import appFirebase from "../credencials";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const auth = getAuth(appFirebase);
+export const auth = getAuth(appFirebase);
 
 export default function Login(props) {
 
@@ -32,6 +32,7 @@ export default function Login(props) {
     props.navigation.navigate("Register");
   };
 
+  // Function to log in
   const login = async () => {
     try {
       setLoading(true); // Set the loading state to true when the login process starts
@@ -44,7 +45,6 @@ export default function Login(props) {
 
       await AsyncStorage.setItem("isLoggedIn", "true"); // Set the isLoggedIn key to true in AsyncStorage
       await AsyncStorage.setItem("userData",JSON.stringify(auth.currentUser))
-      
       
       props.navigation.navigate("App");
     } catch (error) {

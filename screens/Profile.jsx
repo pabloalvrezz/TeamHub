@@ -9,13 +9,18 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from "react-native";
 
 import { firebase } from "@react-native-firebase/storage";
+import { updateProfile } from "firebase/auth";
+import { auth } from "./Login";
 
 export default function Profile({ navigation }) {
   const [userData, setUserData] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [displayName, setDisplayName] = useState(auth.currentUser.displayName);
+  const [email, setEmail] = useState(auth.currentUser.email);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -28,12 +33,11 @@ export default function Profile({ navigation }) {
         console.error("Error fetching user data:", error);
       }
     };
-  
+
     if (!userData) {
       fetchUserData();
     }
   }, [userData]);
-  
 
   // Function to select image from gallery
   const selectImage = async () => {
@@ -45,34 +49,42 @@ export default function Profile({ navigation }) {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
       aspect: [4, 3],
+      quality: 1,
     });
 
     if (result && !result.cancelled) {
-      setSelectedImage(result);
+      if (result.assets && result.assets[0].uri) {
+        setLoading(true);
 
-      uploadImage(selectedImage.assets[0].uri)
-        .then((resolve) => {
-          let ref = firebase
-            .storage()
-            .ref()
-            .child("images/profilePictures/" + userData.uid);
-          ref
-            .put(resolve)
-            .then((resolve) => {
-              console.log("Image uploaded succesfully");
-              userData.photoURL = selectedImage.assets[0].uri
-            })
-            .catch((error) => {
-              console.log(error);
+        const resolvedImage = await uploadImage(result.assets[0].uri);
+
+        let ref = firebase
+          .storage()
+          .ref()
+          .child("images/profilePictures/" + userData.uid);
+        ref
+          .put(resolvedImage)
+          .then(() => {
+            ref.getDownloadURL().then((url) => {
+              setUserData((prevUserData) => ({
+                ...prevUserData,
+                photoURL: url,
+              }));
+              saveProfile(url);
             });
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+            setLoading(false);
+          })
+          .catch((error) => {
+            alert("Error uploading image");
+          });
+      }
     }
   };
 
+  // Function to upload image to firebase storage
   const uploadImage = (uri) => {
     return new Promise((resolve, reject) => {
       let xhr = new XMLHttpRequest();
@@ -89,21 +101,39 @@ export default function Profile({ navigation }) {
     });
   };
 
+  const saveProfile = async (photoURL) => {
+    try {
+      setLoading(true);
+      await updateProfile(auth.currentUser, {
+        displayName: displayName,
+        email: email,
+        photoURL: photoURL,
+      });
+      setLoading(false);
+    } catch (error) {
+      alert(error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.profilePhoto}>
         {userData?.photoURL ? (
-          <Image source={{ uri: userData.photoURL }} style={styles.profile} />
+          <Image
+            source={{ uri: userData.photoURL }}
+            style={styles.profilePhoto}
+          />
         ) : (
           <FontAwesome5
             name="user-circle"
             size={120}
             color="grey"
-            style={styles.profile}
+            style={styles.profilePhoto}
           />
         )}
+
         <TouchableOpacity style={styles.uploadButton} onPress={selectImage}>
-          <FontAwesome5 name="plus" size={20} color="grey" />
+          <FontAwesome5 name="plus" size={13} color="#fff" />
         </TouchableOpacity>
       </View>
 
@@ -112,47 +142,46 @@ export default function Profile({ navigation }) {
           <TextInput
             placeholder="User"
             style={styles.input}
-            keyboardType="email-address"
             autoCapitalize="none"
+            value={displayName}
+            onChangeText={(displayName) => setDisplayName(displayName)}
           />
-          <View style={styles.inputFieldIcon}>
-            <FontAwesome5 name="user" size={20} color="grey" />
-          </View>
         </View>
-
         <View style={styles.inputField}>
           <TextInput
             placeholder="Email"
             style={styles.input}
             keyboardType="email-address"
             autoCapitalize="none"
+            value={email}
+            onChangeText={(email) => setEmail(email)}
           />
-          <View style={styles.inputFieldIcon}>
-            <FontAwesome5 name="envelope" size={20} color="grey" />
-          </View>
         </View>
+        <View style={styles.buttonBox}>
+          {loading ? (
+            <ActivityIndicator color="#00b4d8" />
+          ) : (
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
+                setLoading(true);
 
-        <View style={styles.inputField}>
-          <TextInput placeholder="Password" style={styles.input} />
-          <TouchableOpacity style={styles.inputFieldIcon}>
-            <FontAwesome5 size={20} color="grey" />
-          </TouchableOpacity>
+                // Wait 0.5 seconds before saving profile
+                setTimeout(() => {
+                  saveProfile(userData.photoURL);
+                }, 500);
+                
+                updateProfile(auth.currentUser, {
+                  displayName: displayName,
+                  email: email,
+                });
+                setLoading(false);
+              }}
+            >
+              <Text style={styles.buttonText}>Save</Text>
+            </TouchableOpacity>
+          )}
         </View>
-
-        <View style={styles.inputField}>
-          <TextInput placeholder="Repeat Password" style={styles.input} />
-          <TouchableOpacity style={styles.inputFieldIcon}>
-            <FontAwesome5 size={20} color="grey" />
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity
-          onPress={() => {
-            console.log(userData.uid);
-          }}
-        >
-          <Text>Pulsame</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -168,15 +197,16 @@ const styles = StyleSheet.create({
   profilePhoto: {
     width: 120,
     height: 120,
-    borderRadius: 50,
+    borderRadius: 100,
   },
 
   uploadButton: {
     position: "absolute",
-    right: -15,
+    right: 10,
     bottom: 0,
-    borderRadius: 50,
+    borderRadius: 100,
     padding: 5,
+    backgroundColor: "#00b4d8",
   },
   card: {
     margin: 20,

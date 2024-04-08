@@ -39,14 +39,16 @@ export default function Home({ navigation }) {
   // Function to log out
   const logOut = async () => {
     await AsyncStorage.removeItem("isLoggedIn");
+    await AsyncStorage.removeItem("userData");
     navigation.navigate("Login");
   };
 
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        onPress={() => {
-          logOut();
+        onPress={async () => {
+          logOut(),
+          await AsyncStorage.removeItem("userData");
         }}
       >
         <Text style={styles.userInfo}>Home</Text>

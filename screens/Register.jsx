@@ -14,6 +14,7 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import {
   createUserWithEmailAndPassword,
   getAuth,
+  sendEmailVerification,
   updateProfile,
 } from "firebase/auth";
 import appFirebase from "../credencials";
@@ -95,6 +96,8 @@ const Register = (props) => {
           password
         );
 
+        await sendEmailVerification(userCredential.user);
+
         // Update the user's profile
         await updateProfile(userCredential.user, {
           displayName: username,
@@ -104,8 +107,11 @@ const Register = (props) => {
 
         // Save the isLoggedIn key to true in AsyncStorage
         await AsyncStorage.setItem("isLoggedIn", "true");
-        await AsyncStorage.setItem("userData", JSON.stringify(userCredential.user));
-        
+        await AsyncStorage.setItem(
+          "userData",
+          JSON.stringify(userCredential.user)
+        );
+
         props.navigation.navigate("App");
       } catch (error) {
         setLoading(false);
@@ -139,7 +145,7 @@ const Register = (props) => {
 
   /**
    * Check the strength of the password
-   * @param {*} password 
+   * @param {*} password
    */
   const getStrength = (password) => {
     let strengthIndicator = -1;

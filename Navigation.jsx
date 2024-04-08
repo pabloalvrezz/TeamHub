@@ -21,12 +21,6 @@ export default function MyStack(props) {
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen
-          name="App"
-          options={{ headerShown: false }}
-          component={MyTabs}
-          {...props}
-        />
-        <Stack.Screen
           name="Login"
           component={Login}
           options={{ headerShown: false }}
@@ -40,6 +34,12 @@ export default function MyStack(props) {
           name="ForgetPassword"
           component={ForgetPassword}
           options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="App"
+          options={{ headerShown: false }}
+          component={MyTabs}
+          {...props}
         />
       </Stack.Navigator>
     </NavigationContainer>
