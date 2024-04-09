@@ -1,28 +1,27 @@
 import React, { useState } from "react";
 import {
-  Text,
-  View,
-  StyleSheet,
+  ActivityIndicator,
+  Alert,
   Image,
+  StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  Alert,
-  ActivityIndicator, // Importa ActivityIndicator para el loader
+  View,
 } from "react-native";
 
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { FontAwesome5 } from "@expo/vector-icons";
-import appFirebase from "../credencials";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import appFirebase from "../credencials";
 
 export const auth = getAuth(appFirebase);
 
 export default function Login(props) {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword1, setShowPassword1] = useState(false);
-  const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga del inicio de sesión
+  const [loading, setLoading] = useState(false);
 
   const togglePasswordVisibility1 = () => {
     setShowPassword1(!showPassword1);
@@ -44,8 +43,8 @@ export default function Login(props) {
       setLoading(false); // Set the loading state to false when the login process ends
 
       await AsyncStorage.setItem("isLoggedIn", "true"); // Set the isLoggedIn key to true in AsyncStorage
-      await AsyncStorage.setItem("userData",JSON.stringify(auth.currentUser))
-      
+      await AsyncStorage.setItem("userData", JSON.stringify(auth.currentUser));
+
       props.navigation.navigate("App");
     } catch (error) {
       setLoading(false); // Set the loading state to false when the login process ends

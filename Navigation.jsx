@@ -13,6 +13,7 @@ import Profile from "./screens/Profile";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
 import Search from "./screens/Search";
+import SearchedUser from "./screens/SearchedUser";
 
 const Stack = createStackNavigator();
 const Tabs = createMaterialBottomTabNavigator();
@@ -42,6 +43,7 @@ export default function MyStack(props) {
           component={MyTabs}
           {...props}
         />
+        <Stack.Screen name="SearchedUser" component={SearchedUser} />
       </Stack.Navigator>
     </NavigationContainer>
   );

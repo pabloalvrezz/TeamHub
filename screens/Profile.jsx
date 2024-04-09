@@ -3,29 +3,20 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  ActivityIndicator,
 } from "react-native";
 
 import { firebase } from "@react-native-firebase/storage";
 import { sendEmailVerification, updateProfile } from "firebase/auth";
-import { auth } from "./Login";
+import { doc, getFirestore, updateDoc } from "firebase/firestore";
 import { Modal } from "react-native-paper";
-import {
-  getFirestore,
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  setDoc,
-  updateDoc,
-} from "firebase/firestore";
+import { auth } from "./Login";
 
 export default function Profile({ navigation }) {
   const [userData, setUserData] = useState(null);
@@ -276,7 +267,7 @@ export default function Profile({ navigation }) {
             alert("Email verification sent");
           }}
         >
-          1<Text style={styles.buttonEmailText}>Send Email Verification</Text>
+          <Text style={styles.buttonEmailText}>Send Email Verification</Text>
         </TouchableOpacity>
       </Modal>
     </View>
