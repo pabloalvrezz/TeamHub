@@ -47,7 +47,6 @@ export default function EventDetails() {
 
         <View style={styles.container}>
           <DateTimePicker
-            locale={"es"}
             minDate={dayjs().format("YYYY-MM-DD")}
             date={date}
             selectedItemColor="#00b4d8"
