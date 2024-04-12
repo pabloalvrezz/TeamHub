@@ -83,7 +83,7 @@ export default function Search(props) {
                   <FontAwesome5
                     name="user-circle"
                     size={50}
-                    color="gray"
+                    color="#6c757d"
                     style={styles.userImage}
                   />
                 )}
@@ -175,6 +175,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 10,
     fontSize: 16,
-    color: "gray",
+    color: "#6c757d",
   },
 });

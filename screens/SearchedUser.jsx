@@ -23,7 +23,9 @@ export default function SearchedUser({ route, navigation }) {
         </View>
         <View style={styles.userData}>
           <Text>{user?.displayName}</Text>
-          <Text>{user?.email}</Text>
+          <Text numberOfLines={1} ellipsizeMode="tail">
+            {user?.email}
+          </Text>
         </View>
       </View>
       <TouchableOpacity style={styles.sendMessageButton}>
@@ -59,6 +61,10 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
+  },
+  userData: {
+    marginLeft: 10,
+    flex: 1,
   },
   sendMessageButton: {
     backgroundColor: "#00b4d8",

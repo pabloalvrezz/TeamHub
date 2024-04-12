@@ -26,6 +26,11 @@
     },
     "web": {
       "favicon": "./assets/TeamHubLogo.webp"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c87b44e9-fa7e-47e7-a0ba-725d8de11ded"
+      }
     }
   }
 }

@@ -14,6 +14,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { createMaterialBottomTabNavigator } from "@react-navigation/material-bottom-tabs";
 import Search from "./screens/Search";
 import SearchedUser from "./screens/SearchedUser";
+import EventDetails from "./screens/EventDetails";
 
 const Stack = createStackNavigator();
 const Tabs = createMaterialBottomTabNavigator();
@@ -44,6 +45,11 @@ export default function MyStack(props) {
           {...props}
         />
         <Stack.Screen name="SearchedUser" component={SearchedUser} />
+        <Stack.Screen
+          name="EventDetails"
+          component={EventDetails}
+          options={{ title: "Create Event" }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -60,7 +66,7 @@ function MyTabs(props) {
         borderTopWidth: 1,
       }}
       activeColor="#00b4d8"
-      inactiveColor="gray"
+      inactiveColor="#6c757d"
     >
       <Tabs.Screen
         name="Home"
@@ -70,7 +76,7 @@ function MyTabs(props) {
             <MaterialCommunityIcons name="home" color={color} size={26} />
           ),
         }}
-        propsº={props}
+        props={props}
       />
       <Tabs.Screen
         name="Team"

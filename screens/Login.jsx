@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   },
   separator: {
     borderBottomWidth: 1,
-    borderBottomColor: "gray",
+    borderBottomColor: "#6c757d",
     marginVertical: 10,
   },
 

@@ -1,104 +1,142 @@
+import { FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import {
-  Text,
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  TextInput,
-} from "react-native";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import appFirebase from "../credencials";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth } from "./Login";
-import { FontAwesome5 } from "@expo/vector-icons"; // Importa el icono de FontAwesome5
+import { Text, View, StyleSheet, ScrollView } from "react-native";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import { List } from "react-native-paper";
+
+const [lightColor, darkColor] = ["#fff", "#252525"];
 
 export default function Home({ navigation }) {
-  const [user, setUser] = useState(null);
-  const [userData, setUserData] = useState(null);
-  const [searchQuery, setSearchQuery] = useState(""); // Estado para almacenar la consulta de búsqueda
+  const showEventDetails = () => {
+    console.log("funca");
+  };
 
-  useEffect(() => {
-    const checkLoggedIn = async () => {
-      const userData = await AsyncStorage.getItem("userData");
-
-      if (userData) {
-        setUserData(JSON.parse(userData)); // Parse the string to object
-      }
-
-      const isLoggedIn = await AsyncStorage.getItem("isLoggedIn");
-      if (!isLoggedIn) {
-        navigation.navigate("Login");
-      }
-    };
-
-    checkLoggedIn();
-
-    // Use onAuthStateChanged to listen for authentication state changes
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser(user);
-      }
-    });
-
-    return () => unsubscribe(); // Cleanup function
-  }, []);
-
-  // Function to log out
-  const logOut = async () => {
-    auth.signOut();
-
-    navigation.navigate("Login");
+  const addEvent = () => {
+    navigation.navigate("EventDetails");
   };
 
   return (
     <View style={styles.container}>
-      <Text>Home</Text>
+      <View style={styles.eventsContainer}>
+        <View style={styles.eventsTitle}>
+          <Text style={styles.eventsTitleText}>Events</Text>
+          <TouchableOpacity onPress={addEvent}>
+            <FontAwesome name="plus" size={18} color={darkColor} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.events}>
+          <ScrollView style={styles.scrollView}>
+            <List.Section style={styles.listStyle}>
+              <List.Item
+                title={
+                  <View style={styles.listItemContent}>
+                    <TouchableOpacity onPress={showEventDetails}>
+                      <FontAwesome
+                        name="calendar"
+                        size={18}
+                        color={darkColor}
+                      />
+                    </TouchableOpacity>
+                    <Text style={styles.listItemTitle}>Club presentation</Text>
+                    <Text>Juan Pérez</Text>
+                  </View>
+                }
+                style={styles.listItem}
+              />
+
+              <List.Item
+                title={
+                  <View style={styles.listItemContent}>
+                    <TouchableOpacity onPress={showEventDetails}>
+                      <FontAwesome
+                        name="calendar"
+                        size={18}
+                        color={darkColor}
+                      />
+                    </TouchableOpacity>
+                    <Text style={styles.listItemTitle}>Senior team match</Text>
+                    <Text>Marcos Rodríguez</Text>
+                  </View>
+                }
+                style={styles.listItem}
+              />
+
+              <List.Item
+                title={
+                  <View style={styles.listItemContent}>
+                    <TouchableOpacity onPress={showEventDetails}>
+                      <FontAwesome
+                        name="calendar"
+                        size={18}
+                        color={darkColor}
+                      />
+                    </TouchableOpacity>
+                    <Text style={styles.listItemTitle}>
+                      Juvenil team final of the league
+                    </Text>
+                    <Text>Roberto Almadena</Text>
+                  </View>
+                }
+                style={styles.listItem}
+              />
+            </List.Section>
+          </ScrollView>
+        </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#fff",
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: "#fff",
   },
-  searchContainer: {
+  eventsContainer: {
+    borderRadius: 27,
+    height: "40%",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
     position: "absolute",
-    top: "10%",
-    left: 0,
-    right: 0,
+    bottom: "7%",
+  },
+  eventsTitle: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 10,
-    width: "90%",
-    marginHorizontal: "5%",
-    zIndex: 1,
-    backgroundColor: "#ffffff",
-  },
-  searchIcon: {
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    height: 40,
-  },
-  button: {
-    backgroundColor: "#00b4d8",
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-  },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
-  },
-  userInfo: {
-    fontSize: 18,
+    justifyContent: "center",
     marginBottom: 5,
+  },
+  eventsTitleText: {
+    marginRight: 10,
+    textTransform: "uppercase",
+    fontWeight: "bold",
+    fontSize: 20,
+  },
+  events: {
+    height: "70%",
+    width: "80%",
+    marginBottom: 20,
+    backgroundColor: "#eee",
+    borderRadius: 15,
+    padding: 10,
+  },
+  listItem: {
+    marginBottom: 8,
+    borderRadius: 10,
+  },
+  listItemTitle: {
+    fontWeight: "bold",
+  },
+
+  listItemContent: {
+    color: darkColor,
+  },
+
+  scrollView: {
+    height: "100%",
+    width: "100%",
   },
 });
