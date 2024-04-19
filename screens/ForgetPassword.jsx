@@ -8,10 +8,14 @@ import {
   StyleSheet,
   Image,
 } from "react-native";
-import { getAuth, sendPasswordResetEmail, fetchSignInMethodsForEmail } from "firebase/auth";
+import {
+  getAuth,
+  sendPasswordResetEmail,
+  fetchSignInMethodsForEmail,
+} from "firebase/auth";
 import appFirebase from "../credencials";
 
-const auth = getAuth(appFirebase)
+const auth = getAuth(appFirebase);
 
 const ResetPassword = () => {
   const [email, setEmail] = useState("");
@@ -22,7 +26,6 @@ const ResetPassword = () => {
       Alert.alert("Email is required");
       return;
     }
-
 
     // Check if the email is associated with an existing account
     fetchSignInMethodsForEmail(auth, email)

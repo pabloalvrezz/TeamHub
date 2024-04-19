@@ -13,7 +13,9 @@ import {
 import { FontAwesome5 } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+
 import appFirebase from "../credencials";
+import { globalStyle } from "./globalStyles/styles";
 
 export const auth = getAuth(appFirebase);
 
@@ -80,7 +82,7 @@ export default function Login(props) {
       </View>
 
       <View style={styles.card}>
-        <View style={styles.inputField}>
+        <View style={globalStyle.inputField}>
           <TextInput
             name="txtEmail"
             placeholder="Email"

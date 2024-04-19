@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Text,
   View,
   StyleSheet,
   TouchableOpacity,
   Image,
   TextInput,
   ActivityIndicator,
+  Text,
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import {
@@ -15,13 +15,45 @@ import {
   query,
   where,
   getDocs,
+  doc,
+  getDoc,
 } from "firebase/firestore";
 import { auth } from "./Login";
+import Animated, { FadeInDown } from "react-native-reanimated";
+
+const UserItem = ({ user, onPress }) => {
+  return (
+    <TouchableOpacity
+      onPress={() => onPress(user)}
+      style={styles.userContainer}
+    >
+      {user?.photoURL ? (
+        <Image source={{ uri: user?.photoURL }} style={styles.userImage} />
+      ) : (
+        <FontAwesome5
+          name="user-circle"
+          size={50}
+          color="#6c757d"
+          style={styles.userImage}
+        />
+      )}
+      <View style={styles.userInfo}>
+        <Text style={styles.displayName}>{user?.displayName}</Text>
+        <Text style={styles.role}>{user?.role}</Text>
+        <Text style={styles.clubName}>{user?.clubName}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+};
 
 export default function Search(props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    searchFunction();
+  }, [searchQuery]);
 
   const searchFunction = async () => {
     setLoading(true);
@@ -32,16 +64,33 @@ export default function Search(props) {
       const q = query(usersRef, where("displayName", ">=", searchQuery));
       const querySnapshot = await getDocs(q);
 
-      // Only get the users that match the search query and are not the current user
       const results = [];
-      querySnapshot.forEach((doc) => {
-        if (
-          doc.data().displayName.includes(searchQuery) &&
-          doc.data().displayName !== auth.currentUser.displayName
-        ) {
-          results.push(doc.data());
+      for (const docSnapshot of querySnapshot.docs) {
+        const userData = docSnapshot.data();
+
+        if (userData?.player || userData?.trainer) {
+          const path = userData.player ? userData.player : userData.trainer;
+          const clubRef = doc(db, path);
+          const clubSnapshot = await getDoc(clubRef);
+
+          if (clubSnapshot.exists()) {
+            const club = clubSnapshot.data();
+            const clubData = doc(db, "clubs/" + club.club);
+            const dataClubRef = await getDoc(clubData);
+
+            if (dataClubRef.exists()) {
+              const clubData = dataClubRef.data();
+              userData.clubName = clubData.name;
+
+              results.push(userData);
+            }
+          }
+        } else {
+          if (userData.uid !== auth.currentUser.uid) {
+            results.push(userData);
+          }
         }
-      });
+      }
 
       setSearchResults(results);
     } catch (error) {
@@ -50,12 +99,11 @@ export default function Search(props) {
     setLoading(false);
   };
 
-  // Function to navigate to the SearchedUser screen
   const navigateUserClicked = (user) => {
     props.navigation.navigate("SearchedUser", { user });
   };
 
-  const showResults = () => {
+  const renderResults = () => {
     if (loading) {
       return (
         <ActivityIndicator
@@ -66,36 +114,20 @@ export default function Search(props) {
       );
     } else {
       return (
-        <View style={styles.resultsContainer}>
+        <Animated.View
+          style={styles.resultsContainer}
+          entering={FadeInDown.delay(200)}
+        >
           {searchResults.length > 0 && searchQuery.length > 0 ? (
             searchResults.map((user, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => navigateUserClicked(user)}
-                style={styles.userContainer}
-              >
-                {user?.photoURL ? (
-                  <Image
-                    source={{ uri: user?.photoURL }}
-                    style={styles.userImage}
-                  />
-                ) : (
-                  <FontAwesome5
-                    name="user-circle"
-                    size={50}
-                    color="#6c757d"
-                    style={styles.userImage}
-                  />
-                )}
-                <Text style={styles.displayName}>{user?.displayName}</Text>
-              </TouchableOpacity>
+              <UserItem key={index} user={user} onPress={navigateUserClicked} />
             ))
           ) : (
             <Text style={styles.noResultsText}>
               No hay resultados disponibles
             </Text>
           )}
-        </View>
+        </Animated.View>
       );
     }
   };
@@ -113,13 +145,10 @@ export default function Search(props) {
           placeholder="Search"
           style={styles.searchInput}
           value={searchQuery}
-          onChangeText={(text) => {
-            setSearchQuery(text);
-            searchFunction();
-          }}
+          onChangeText={setSearchQuery}
         />
       </View>
-      {showResults()}
+      {renderResults()}
     </View>
   );
 }
@@ -161,6 +190,10 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     backgroundColor: "#f9f9f9",
   },
+  userInfo: {
+    flex: 1,
+    marginLeft: 10,
+  },
   userImage: {
     width: 50,
     height: 50,
@@ -170,6 +203,18 @@ const styles = StyleSheet.create({
   },
   displayName: {
     fontSize: 16,
+  },
+  role: {
+    color: "#6c757d",
+    fontSize: 14,
+    marginBottom: 2,
+    position: "absolute",
+    right: 10,
+    top: 10,
+  },
+  clubName: {
+    color: "#6c757d",
+    fontSize: 14,
   },
   noResultsText: {
     textAlign: "center",

@@ -1,6 +1,7 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import React, { useEffect } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Animated from "react-native-reanimated";
 
 export default function SearchedUser({ route, navigation }) {
   const user = route.params.user;
