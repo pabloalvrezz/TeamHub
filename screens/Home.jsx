@@ -4,19 +4,26 @@ import { Text, View, StyleSheet, ScrollView } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { ActivityIndicator, List } from "react-native-paper";
 import { auth } from "../screens/Login";
-import { getFirestore, getDoc, doc } from "firebase/firestore";
+import {
+  getFirestore,
+  getDoc,
+  doc,
+  collection,
+  getDocs,
+} from "firebase/firestore";
 
 const [lightColor, darkColor] = ["#fff", "#252525"];
 
 export default function Home({ navigation }) {
   const [userData, setUserData] = useState(null);
+  const [events, setEvents] = useState([]);
+  const db = getFirestore();
 
   useEffect(() => {
     const obtainUserData = async () => {
       try {
         const currentUser = auth.currentUser;
         const uid = currentUser.uid;
-        const db = getFirestore();
 
         const userDocRef = doc(db, "users", uid);
         const userDocSnap = await getDoc(userDocRef);
@@ -33,17 +40,29 @@ export default function Home({ navigation }) {
     };
 
     obtainUserData();
+    obtainEvents();
   }, []);
 
   // Function to get the events from the database
-  // assosiated with the current user and the user's team
-  const getEvents = () => {
-    // Get the events from the database
-    
+  // associated with the current user and the user's team
+  const obtainEvents = async () => {
+    try {
+      const eventsCollectionRef = collection(db, "events");
+      const querySnapshot = await getDocs(eventsCollectionRef);
+      const eventsData = [];
+
+      querySnapshot.forEach((doc) => {
+        eventsData.push(doc.data());
+      });
+
+      setEvents(eventsData);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    }
   };
 
   const showEventDetails = () => {
-    console.log("funca");
+    console.log("Event details will be shown");
   };
 
   const renderAddEventButton = () => {
@@ -57,55 +76,6 @@ export default function Home({ navigation }) {
           <FontAwesome name="plus" size={18} color={darkColor} />
         </TouchableOpacity>
       )
-    );
-  };
-
-  const getEventsList = () => {
-    return (
-      <ScrollView style={styles.scrollView}>
-        <List.Section style={styles.listStyle}>
-          <List.Item
-            title={
-              <View style={styles.listItemContent}>
-                <TouchableOpacity onPress={showEventDetails}>
-                  <FontAwesome name="calendar" size={18} color={darkColor} />
-                </TouchableOpacity>
-                <Text style={styles.listItemTitle}>Club presentation</Text>
-                <Text>Juan Pérez</Text>
-              </View>
-            }
-            style={styles.listItem}
-          />
-
-          <List.Item
-            title={
-              <View style={styles.listItemContent}>
-                <TouchableOpacity onPress={showEventDetails}>
-                  <FontAwesome name="calendar" size={18} color={darkColor} />
-                </TouchableOpacity>
-                <Text style={styles.listItemTitle}>Senior team match</Text>
-                <Text>Marcos Rodríguez</Text>
-              </View>
-            }
-            style={styles.listItem}
-          />
-
-          <List.Item
-            title={
-              <View style={styles.listItemContent}>
-                <TouchableOpacity onPress={showEventDetails}>
-                  <FontAwesome name="calendar" size={18} color={darkColor} />
-                </TouchableOpacity>
-                <Text style={styles.listItemTitle}>
-                  Juvenil team final of the league
-                </Text>
-                <Text>Roberto Almadena</Text>
-              </View>
-            }
-            style={styles.listItem}
-          />
-        </List.Section>
-      </ScrollView>
     );
   };
 
@@ -123,7 +93,35 @@ export default function Home({ navigation }) {
             <Text style={styles.eventsTitleText}>Events</Text>
             {renderAddEventButton()}
           </View>
-          <View style={styles.events}>{getEventsList()}</View>
+          <View style={styles.events}>
+            <ScrollView style={styles.scrollView}>
+              <List.Section style={styles.listStyle}>
+                {events.map((event, index) => (
+                  <List.Item
+                    key={index}
+                    title={
+                      <View style={styles.listItemContent}>
+                        <TouchableOpacity onPress={showEventDetails}>
+                          <FontAwesome
+                            name="calendar"
+                            size={18}
+                            color={darkColor}
+                          />
+                          <Text style={styles.listItemTitle}>
+                            {event.title}
+                          </Text>
+                          <Text style={styles.eventCreator}>
+                            {event.creator}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    }
+                    style={styles.listItem}
+                  />
+                ))}
+              </List.Section>
+            </ScrollView>
+          </View>
         </View>
       )}
     </View>
@@ -169,17 +167,21 @@ const styles = StyleSheet.create({
   listItem: {
     marginBottom: 8,
     borderRadius: 10,
+    width: "100%",
   },
   listItemTitle: {
     fontWeight: "bold",
   },
-
   listItemContent: {
     color: darkColor,
+    width: "100%",
   },
-
   scrollView: {
     height: "100%",
     width: "100%",
+  },
+  eventCreator: {
+    color: "#6c757d",
+    fontSize: 14,
   },
 });

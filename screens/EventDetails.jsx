@@ -6,13 +6,12 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  KeyboardAvoidingView,
 } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
 import dayjs from "dayjs";
 import { auth } from "./Login";
-import { globalStyle } from "./globalStyles/styles";
 import { FontAwesome } from "@expo/vector-icons";
+import { addDoc, collection, getFirestore } from "firebase/firestore";
+import { ActivityIndicator } from "react-native-paper";
 
 export default function EventDetails() {
   const [title, setTitle] = useState("");
@@ -22,6 +21,7 @@ export default function EventDetails() {
   const [mode, setMode] = useState("date");
   const [time, setTime] = useState("");
   const [allFields, setAllFields] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (title && date && time) {
@@ -57,19 +57,29 @@ export default function EventDetails() {
 
   // Function to handle the form submission
   const createEvent = () => {
-
+    setLoading(true);
     const formattedDate = dayjs(date).format("YYYY-MM-DD");
-    
+
     // Create a new event
     const event = {
       title,
       date: formattedDate,
       time,
-      user: auth.currentUser.displayName,
+      creator: auth.currentUser.displayName,
     };
 
     // Save the event in the database
-    
+    const db = getFirestore();
+    const eventsRef = collection(db, "events");
+
+    addDoc(eventsRef, event);
+
+    // Reset the form
+    setTitle("");
+    setDate(new Date());
+    setTime("");
+    setAllFields(false);
+    setLoading(false);
   };
 
   return (
@@ -88,7 +98,11 @@ export default function EventDetails() {
       </View>
       <View style={styles.inputDate}>
         <TouchableOpacity onPress={() => showMode("date")}>
-          <Text style={styles.dateButtonText}>Select date</Text>
+          <Text style={styles.dateButtonText}>
+            {date
+              ? date.getDay() + "-" + date.getMonth() + "-" + date.getFullYear()
+              : "Select date"}
+          </Text>
           <Text style={styles.dateButtonIcon}>
             <FontAwesome name="calendar" size={18} color={"black"} />
           </Text>
@@ -106,7 +120,9 @@ export default function EventDetails() {
 
       <View style={styles.inputTime}>
         <TouchableOpacity onPress={() => showMode("time")}>
-          <Text style={styles.timeButtonText}>Select time</Text>
+          <Text style={styles.timeButtonText}>
+            {time ? time : "Select time"}
+          </Text>
           <Text style={styles.timeButtonIcon}>
             <FontAwesome name="clock-o" size={18} color={"black"} />
           </Text>
@@ -124,6 +140,7 @@ export default function EventDetails() {
 
       {allFields && (
         <TouchableOpacity style={styles.createButton} onPress={createEvent}>
+          {loading && <ActivityIndicator color="#fff" />}
           <Text style={styles.createButtonText}>Create event</Text>
         </TouchableOpacity>
       )}
@@ -203,7 +220,7 @@ const styles = StyleSheet.create({
   },
 
   createButton: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#00b4d8",
     borderRadius: 30,
     paddingVertical: 20,
     paddingHorizontal: 50,

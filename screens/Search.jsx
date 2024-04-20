@@ -55,6 +55,7 @@ export default function Search(props) {
     searchFunction();
   }, [searchQuery]);
 
+  // Search users by displayName
   const searchFunction = async () => {
     setLoading(true);
     try {
@@ -64,7 +65,9 @@ export default function Search(props) {
       const q = query(usersRef, where("displayName", ">=", searchQuery));
       const querySnapshot = await getDocs(q);
 
-      const results = [];
+      const results = []; // Array to store the results
+
+      // Loop through the results
       for (const docSnapshot of querySnapshot.docs) {
         const userData = docSnapshot.data();
 
