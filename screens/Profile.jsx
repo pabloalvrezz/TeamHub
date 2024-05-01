@@ -17,6 +17,11 @@ import { sendEmailVerification, updateProfile } from "firebase/auth";
 import { doc, getFirestore, updateDoc } from "firebase/firestore";
 import { Modal } from "react-native-paper";
 import { auth } from "./Login";
+import { useTranslation } from "react-i18next";
+import { I18n } from "i18n-js";
+import { changeLanguage } from "i18next";
+import i18n from "../i18n.config";
+import { useRoute } from "@react-navigation/native";
 
 export default function Profile({ navigation }) {
   const [userData, setUserData] = useState(null);
@@ -24,6 +29,8 @@ export default function Profile({ navigation }) {
   const [displayName, setDisplayName] = useState(auth.currentUser.displayName);
   const [email, setEmail] = useState(auth.currentUser.email);
   const [visible, setVisible] = useState(false);
+  const { t } = useTranslation();
+  const route = useRoute();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -47,7 +54,7 @@ export default function Profile({ navigation }) {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== "granted") {
-      alert("Permission to access camera roll is required!");
+      alert(t("cameraPermission"));
       return;
     }
 
@@ -82,7 +89,7 @@ export default function Profile({ navigation }) {
             setLoading(false);
           })
           .catch((error) => {
-            alert("Error uploading image");
+            alert(t("errorUploadingImage"));
           });
       }
     }
@@ -163,7 +170,7 @@ export default function Profile({ navigation }) {
         photoURL: auth.currentUser.photoURL,
       }));
     } catch (error) {
-      alert("Error updating user profile in Firestore:");
+      alert(t("errorUpdatingProfile"));
     }
   };
 
@@ -177,8 +184,30 @@ export default function Profile({ navigation }) {
     setVisible(false);
   };
 
+  const changeAppLanguage = (lng) => {
+    changeLanguage(lng);
+
+    navigation.navigate("Profile");
+  };
+
   return (
     <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.languajeButton}
+        onPress={() => changeAppLanguage(i18n.language === "en" ? "es" : "en")}
+      >
+        {i18n.language === "en" ? (
+          <Image
+            source={require("../assets/inglaterra.png")}
+            style={styles.languajeButtonFlag}
+          />
+        ) : (
+          <Image
+            source={require("../assets/espana.png")}
+            style={styles.languajeButtonFlag}
+          />
+        )}
+      </TouchableOpacity>
       <View style={styles.profilePhoto}>
         {userData?.photoURL ? (
           <Image
@@ -235,7 +264,6 @@ export default function Profile({ navigation }) {
               onPress={() => {
                 setLoading(true);
 
-                // Wait 0.5 seconds before saving profile
                 setTimeout(() => {
                   saveProfile(userData.photoURL);
                 }, 500);
@@ -247,7 +275,7 @@ export default function Profile({ navigation }) {
                 setLoading(false);
               }}
             >
-              <Text style={styles.buttonText}>Save</Text>
+              <Text style={styles.buttonText}>{t("save")}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -258,16 +286,16 @@ export default function Profile({ navigation }) {
         onDismiss={hideModal}
         contentContainerStyle={styles.modal}
       >
-        <Text>Verified email to change the status</Text>
+        <Text>{t("verifyEmail")}</Text>
         <TouchableOpacity
           style={styles.buttonEmail}
           onPress={() => {
             sendEmailVerification(auth.currentUser);
             hideModal();
-            alert("Email verification sent");
+            alert(t("verifyEmailSent"));
           }}
         >
-          <Text style={styles.buttonEmailText}>Send Email Verification</Text>
+          <Text style={styles.buttonEmailText}>{t("verifyEmailSent")}</Text>
         </TouchableOpacity>
       </Modal>
     </View>
@@ -400,5 +428,16 @@ const styles = StyleSheet.create({
   registerBox: {
     flexDirection: "row",
     justifyContent: "center",
+  },
+  languajeButton: {
+    position: "absolute",
+    right: 10,
+    top: "10%",
+    padding: 10,
+    borderRadius: 10,
+  },
+  languajeButtonFlag: {
+    width: 30,
+    height: 30,
   },
 });

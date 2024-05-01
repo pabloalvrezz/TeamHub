@@ -17,6 +17,10 @@ import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import appFirebase from "../credencials";
 import { globalStyle } from "./globalStyles/styles";
 
+import i18n from "i18n-js";
+import { useTranslation } from "react-i18next";
+import { changeLanguage } from "i18next";
+
 export const auth = getAuth(appFirebase);
 
 export default function Login(props) {
@@ -24,6 +28,7 @@ export default function Login(props) {
   const [password, setPassword] = useState("");
   const [showPassword1, setShowPassword1] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const togglePasswordVisibility1 = () => {
     setShowPassword1(!showPassword1);
@@ -50,21 +55,20 @@ export default function Login(props) {
       props.navigation.navigate("App");
     } catch (error) {
       setLoading(false); // Set the loading state to false when the login process ends
-      let errorMessage = "Login error";
-
+      let errorMessage = t("loginError");
       switch (error.code) {
         case "auth/user-not-found":
         case "auth/invalid-email":
-          errorMessage = "Incorrect email";
+          errorMessage = t("incorrectEmail");
           break;
         case "auth/wrong-password":
-          errorMessage = "Incorrect password";
+          errorMessage = t("incorrectPassword");
           break;
         case "auth/invalid-credential":
-          errorMessage = "Invalid credentials";
+          errorMessage = t("invalidCredentials");
           break;
         default:
-          errorMessage = "Login error!";
+          errorMessage = t("loginError");
           break;
       }
 
@@ -85,7 +89,7 @@ export default function Login(props) {
         <View style={globalStyle.inputField}>
           <TextInput
             name="txtEmail"
-            placeholder="Email"
+            placeholder={t("emailPlaceholder")}
             style={styles.input}
             keyboardType="email-address"
             autoCapitalize="none"
@@ -100,7 +104,7 @@ export default function Login(props) {
         <View style={styles.inputField}>
           <TextInput
             name="txtPassword"
-            placeholder="Password"
+            placeholder={t("passwordPlaceholder")}
             style={styles.input}
             secureTextEntry={!showPassword1}
             value={password}
@@ -123,7 +127,7 @@ export default function Login(props) {
             <ActivityIndicator color="black" />
           ) : (
             <TouchableOpacity style={styles.button} onPress={login}>
-              <Text style={styles.buttonText}>Log in</Text>
+              <Text style={styles.buttonText}>{t("login")}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -131,9 +135,9 @@ export default function Login(props) {
         <View style={styles.separator}></View>
 
         <View style={styles.registerBox}>
-          <Text>Or create one </Text>
+          <Text>{t("orCreateOne") + " "}</Text>
           <TouchableOpacity onPress={createAccount}>
-            <Text style={{ color: "#00b4d8" }}>here</Text>
+            <Text style={{ color: "#00b4d8" }}>{t("here")}</Text>
           </TouchableOpacity>
         </View>
       </View>

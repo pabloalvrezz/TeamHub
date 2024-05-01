@@ -14,6 +14,7 @@ import { createMaterialBottomTabNavigator } from "@react-navigation/material-bot
 import Search from "./screens/Search";
 import SearchedUser from "./screens/SearchedUser";
 import EventDetails from "./screens/EventDetails";
+import { useTranslation } from "react-i18next";
 
 const Stack = createStackNavigator();
 const Tabs = createMaterialBottomTabNavigator();
@@ -55,6 +56,9 @@ export default function MyStack(props) {
 }
 
 function MyTabs(props) {
+  const { t } = useTranslation();
+
+  const HideBarLabel = () => null;
   return (
     <Tabs.Navigator
       initialRouteName="Home"
@@ -74,6 +78,7 @@ function MyTabs(props) {
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="home" color={color} size={26} />
           ),
+          tabBarLabel: HideBarLabel,
         }}
         props={props}
       />
@@ -88,7 +93,9 @@ function MyTabs(props) {
               size={26}
             />
           ),
+          tabBarLabel: HideBarLabel,
         }}
+        props={props}
       />
       <Tabs.Screen
         name="Search"
@@ -97,16 +104,20 @@ function MyTabs(props) {
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="magnify" color={color} size={26} />
           ),
+          tabBarLabel: HideBarLabel,
         }}
+        props={props}
       />
       <Tabs.Screen
-        name="Stats"
+        name="Statistics"
         component={Statistics}
         options={{
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="chart-pie" color={color} size={26} />
           ),
+          tabBarLabel: HideBarLabel,
         }}
+        props={props}
       />
       <Tabs.Screen
         name="Profile"
@@ -115,7 +126,9 @@ function MyTabs(props) {
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="account" color={color} size={26} />
           ),
+          tabBarLabel: HideBarLabel,
         }}
+        props={props}
       />
     </Tabs.Navigator>
   );

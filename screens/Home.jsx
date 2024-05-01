@@ -11,6 +11,7 @@ import {
   collection,
   getDocs,
 } from "firebase/firestore";
+import { useTranslation } from "react-i18next";
 
 const [lightColor, darkColor] = ["#fff", "#252525"];
 
@@ -18,6 +19,7 @@ export default function Home({ navigation }) {
   const [userData, setUserData] = useState(null);
   const [events, setEvents] = useState([]);
   const db = getFirestore();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const obtainUserData = async () => {
@@ -90,7 +92,7 @@ export default function Home({ navigation }) {
       ) : (
         <View style={styles.eventsContainer}>
           <View style={styles.eventsTitle}>
-            <Text style={styles.eventsTitleText}>Events</Text>
+            <Text style={styles.eventsTitleText}>{t("events")}</Text>
             {renderAddEventButton()}
           </View>
           <View style={styles.events}>

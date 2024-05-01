@@ -1,10 +1,12 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated from "react-native-reanimated";
 
 export default function SearchedUser({ route, navigation }) {
   const user = route.params.user;
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (user && user.displayName) {
@@ -30,7 +32,7 @@ export default function SearchedUser({ route, navigation }) {
         </View>
       </View>
       <TouchableOpacity style={styles.sendMessageButton}>
-        <Text>Send message</Text>
+        <Text>{t("sendMessage")}</Text>
       </TouchableOpacity>
     </View>
   );

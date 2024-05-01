@@ -25,12 +25,18 @@ import {
   setDoc,
   doc,
 } from "firebase/firestore";
+import { useTranslation } from "react-i18next";
+
+// Importar traducciones
+import es from "../locales/es";
 
 const strengthLabels = ["weak", "medium", "strong"];
 const auth = getAuth(appFirebase);
 
 const Register = (props) => {
-  // States
+  const { t } = useTranslation();
+
+  // Estados
   const [strength, setStrength] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,74 +46,62 @@ const Register = (props) => {
   const [showPassword2, setShowPassword2] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Const to toggle password visibility
+  // Constantes para alternar la visibilidad de la contraseña
   const togglePasswordVisibility1 = () => {
     setShowPassword1(!showPassword1);
   };
 
-  // Const to toggle password visibility
   const togglePasswordVisibility2 = () => {
     setShowPassword2(!showPassword2);
   };
 
-  // Const to navigate to login screen
   const loginAccount = () => {
     props.navigation.navigate("Login");
   };
 
-  // Const to check email
   const checkEmail = (email) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
-  // Const to create account
   const createAccount = async () => {
-    equlaPasswords = false;
-    weakPassword = true;
-    error = "Error creating account";
+    let equalPasswords = false;
+    let weakPassword = true;
+    let error = t("errorCreatingAccount");
 
-    // Check if the username is empty
     if (username === "") {
-      error = "Username is empty";
+      error = t("usernameEmpty");
     }
 
-    // Check if the passwords are equal
     if (password !== repeatPassword) {
-      error = "Passwords do not match";
-    } else equlaPasswords = true;
+      error = t("passwordsDoNotMatch");
+    } else equalPasswords = true;
 
-    // Check the strength of the password
     if (strength !== "weak") {
       weakPassword = false;
     } else {
-      error = "Weak password";
+      error = t("weakPassword");
     }
 
-    // Check if the email is correct
     if (!checkEmail(email)) {
-      error = "Email format is incorrect";
+      error = t("emailFormat");
     }
 
-    // Check all the conditions
-    if (equlaPasswords && !weakPassword && checkEmail(email)) {
-      setLoading(true); // Set the loading state to true when the account creation process starts
+    if (equalPasswords && !weakPassword && checkEmail(email)) {
+      setLoading(true);
 
       await AsyncStorage.setItem("isLoggedIn", "true");
 
       try {
-        // Create a new user
         const userCredential = await createUserWithEmailAndPassword(
           auth,
           email,
           password
         );
 
-        // Update the user's profile
         await updateProfile(userCredential.user, {
           displayName: username,
         });
 
-        // Save the user data to Firestore
         const db = getFirestore();
         const usersRef = collection(db, "users");
 
@@ -123,7 +117,6 @@ const Register = (props) => {
 
         setLoading(false);
 
-        // Save the isLoggedIn key to true in AsyncStorage
         await AsyncStorage.setItem("isLoggedIn", "true");
         await AsyncStorage.setItem(
           "userData",
@@ -135,36 +128,27 @@ const Register = (props) => {
         setLoading(false);
 
         if (error.code === "auth/email-already-in-use") {
-          Alert.alert(
-            "Error",
-            "The email address is already in use by another account.",
-            [
-              {
-                text: "Ok",
-                style: "cancel",
-              },
-              {
-                text: "Forget Password?",
-                onPress: () => props.navigation.navigate("ForgetPassword"),
-                style: "cancel",
-              },
-            ]
-          );
+          Alert.alert(t("alert"), t("emailAlreadyInUse"), [
+            {
+              text: "Ok",
+              style: "cancel",
+            },
+            {
+              text: t("forgetPassword"),
+              onPress: () => props.navigation.navigate("ForgetPassword"),
+              style: "cancel",
+            },
+          ]);
         } else {
-          // Handle other errors
           console.error("Error creating account:", error);
-          alert("Error creating account");
+          Alert.alert(t("alert"), error);
         }
       }
     } else {
-      alert(error);
+      Alert.alert(t("alert"), error);
     }
   };
 
-  /**
-   * Check the strength of the password
-   * @param {*} password
-   */
   const getStrength = (password) => {
     let strengthIndicator = -1;
     let upper = false,
@@ -175,25 +159,21 @@ const Register = (props) => {
     for (let index = 0; index < password.length; index++) {
       let char = password.charCodeAt(index);
 
-      // Uppercase characters
       if (!upper && char >= 65 && char <= 90) {
         upper = true;
         strengthIndicator++;
       }
 
-      // Numbers
       if (!numbers && char >= 48 && char <= 57) {
         numbers = true;
         strengthIndicator++;
       }
 
-      // Lowercase characters
       if (!lower && char >= 97 && char <= 122) {
         lower = true;
         strengthIndicator++;
       }
 
-      // Special characters
       if (
         !special &&
         ((char >= 33 && char <= 47) ||
@@ -224,7 +204,7 @@ const Register = (props) => {
       <View style={styles.card}>
         <View style={styles.inputField}>
           <TextInput
-            placeholder="User"
+            placeholder={t("user")}
             style={styles.input}
             keyboardType="email-address"
             autoCapitalize="none"
@@ -237,7 +217,7 @@ const Register = (props) => {
 
         <View style={styles.inputField}>
           <TextInput
-            placeholder="Email"
+            placeholder={t("emailPlaceholder")}
             style={styles.input}
             keyboardType="email-address"
             autoCapitalize="none"
@@ -250,7 +230,7 @@ const Register = (props) => {
 
         <View style={styles.inputField}>
           <TextInput
-            placeholder="Password"
+            placeholder={t("passwordPlaceholder")}
             style={styles.input}
             secureTextEntry={!showPassword1}
             onChangeText={(password) => {
@@ -271,7 +251,7 @@ const Register = (props) => {
 
         <View style={styles.inputField}>
           <TextInput
-            placeholder="Repeat Password"
+            placeholder={t("repeatPassword")}
             style={styles.input}
             secureTextEntry={!showPassword2}
             onChangeText={(repeatPassword) => setRepeatPassword(repeatPassword)}
@@ -292,7 +272,7 @@ const Register = (props) => {
           <View style={styles.bar}></View>
         </View>
         <Text style={styles.strength}>
-          {strength && `${strength} password`}
+          {strength && `${t("passwordPlaceholder")} ${t(strength)}`}
         </Text>
 
         <View style={styles.buttonBox}>
@@ -300,7 +280,7 @@ const Register = (props) => {
             <ActivityIndicator color="black" />
           ) : (
             <TouchableOpacity style={styles.button} onPress={createAccount}>
-              <Text style={styles.buttonText}>Register</Text>
+              <Text style={styles.buttonText}>{t("register")}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -308,9 +288,9 @@ const Register = (props) => {
         <View style={styles.separator}></View>
 
         <View style={styles.registerBox}>
-          <Text>Do you already have one? </Text>
+          <Text>{t("alreadyHaveOne") + " "}</Text>
           <TouchableOpacity onPress={loginAccount}>
-            <Text style={{ color: "#00b4d8" }}>Log in</Text>
+            <Text style={{ color: "#00b4d8" }}>{t("logIn")}</Text>
           </TouchableOpacity>
         </View>
       </View>

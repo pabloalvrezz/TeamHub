@@ -20,6 +20,7 @@ import {
 } from "firebase/firestore";
 import { auth } from "./Login";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import { useTranslation } from "react-i18next";
 
 const UserItem = ({ user, onPress }) => {
   return (
@@ -50,6 +51,7 @@ export default function Search(props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     searchFunction();
@@ -126,9 +128,7 @@ export default function Search(props) {
               <UserItem key={index} user={user} onPress={navigateUserClicked} />
             ))
           ) : (
-            <Text style={styles.noResultsText}>
-              No hay resultados disponibles
-            </Text>
+            <Text style={styles.noResultsText}>{t("noresults")}</Text>
           )}
         </Animated.View>
       );
@@ -145,7 +145,7 @@ export default function Search(props) {
           style={styles.searchIcon}
         />
         <TextInput
-          placeholder="Search"
+          placeholder={t("search")}
           style={styles.searchInput}
           value={searchQuery}
           onChangeText={setSearchQuery}
