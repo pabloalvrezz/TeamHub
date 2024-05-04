@@ -115,9 +115,6 @@ export default function TeamDetails({ navigation }) {
         }
       }
 
-      // Now unassignedTrainers array contains all trainers not assigned to any team
-      console.log("Unassigned trainers:", unassignedTrainers);
-
       setTrainers(unassignedTrainers);
     } catch (error) {
       console.error("Error getting trainers: ", error);

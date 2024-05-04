@@ -12,41 +12,46 @@ import {
   getAuth,
   sendPasswordResetEmail,
   fetchSignInMethodsForEmail,
+  signInWithEmailAndPassword,
 } from "firebase/auth";
 import appFirebase from "../credencials";
+import {
+  collection,
+  getDocs,
+  getFirestore,
+  query,
+  where,
+} from "firebase/firestore";
 
 const auth = getAuth(appFirebase);
 
-const ResetPassword = () => {
+const ResetPassword = ({ navigation }) => {
   const [email, setEmail] = useState("");
 
   // Function to reset password
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
     if (!email) {
       Alert.alert("Email is required");
       return;
     }
 
-    // Check if the email is associated with an existing account
-    fetchSignInMethodsForEmail(auth, email)
-      .then((signInMethods) => {
-        if (signInMethods.length === 0) {
-          // Email is not associated with any account
-          Alert.alert("Email is not associated with any account");
-        } else {
-          // Email is associated with an existing account, send password reset email
-          sendPasswordResetEmail(appFirebase, email)
-            .then(() => {
-              Alert.alert("Password reset email sent");
-            })
-            .catch((error) => {
-              Alert.alert(error.message);
-            });
-        }
-      })
-      .catch((error) => {
-        Alert.alert("Error checking email:", error.message);
-      });
+    const db = getFirestore();
+    const usersRef = collection(db, "users");
+    const querySnapshot = await getDocs(usersRef);
+    console.log(querySnapshot.docs);
+
+    if (querySnapshot.empty) {
+      Alert.alert("Email not found");
+      return;
+    } else {
+      try {
+        await sendPasswordResetEmail(auth, email);
+        Alert.alert(t("alert"), t("passwordResetEmailSent"));
+        navigation.navigate("Login");
+      } catch (error) {
+        Alert.alert(t("alert"), t("errorSendingEmail"));
+      }
+    }
   };
 
   return (

@@ -136,6 +136,8 @@ const Register = (props) => {
               style: "cancel",
             },
           ]);
+        } else if (error.code === "auth/weak-password") {
+          Alert.alert(t("alert"), t("weakPassword"));
         } else {
           console.error("Error creating account:", error);
           Alert.alert(t("alert"), error);

@@ -40,6 +40,7 @@ export default function MyStack(props) {
           name="ForgetPassword"
           component={ForgetPassword}
           options={{ headerShown: false }}
+          {...props}
         />
         <Stack.Screen
           name="App"

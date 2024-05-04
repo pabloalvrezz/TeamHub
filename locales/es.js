@@ -66,6 +66,8 @@ const es = {
   createTeam: "Crear equipo",
   teamAlert: "Porfavor introduce todos los campos del formulario",
   teamCreated: "Equipo creado correctamente",
+  passwordResetEmailSent:
+    "Se ha enviado un correo electrónico para restablecer la contraseña",
 };
 
 export default es;

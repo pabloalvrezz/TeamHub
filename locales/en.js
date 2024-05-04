@@ -64,6 +64,7 @@ const en = {
   createTeam: "Create team",
   teamAlert: "Please enter all the fields in the form",
   teamCreated: "Team created successfully",
+  passwordResetEmailSent: "Password reset email sent",
 };
 
 export default en;
