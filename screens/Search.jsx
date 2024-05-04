@@ -22,28 +22,34 @@ import { auth } from "./Login";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useTranslation } from "react-i18next";
 
-const UserItem = ({ user, onPress }) => {
+const UserItem = ({ index, user, onPress }) => {
   return (
-    <TouchableOpacity
-      onPress={() => onPress(user)}
-      style={styles.userContainer}
-    >
-      {user?.photoURL ? (
-        <Image source={{ uri: user?.photoURL }} style={styles.userImage} />
-      ) : (
-        <FontAwesome5
-          name="user-circle"
-          size={50}
-          color="#6c757d"
-          style={styles.userImage}
-        />
-      )}
-      <View style={styles.userInfo}>
-        <Text style={styles.displayName}>{user?.displayName}</Text>
-        <Text style={styles.role}>{user?.role}</Text>
-        <Text style={styles.clubName}>{user?.clubName}</Text>
-      </View>
-    </TouchableOpacity>
+    <Animated.View entering={FadeInDown.delay(200 * index)}>
+      <TouchableOpacity
+        onPress={() => onPress(user)}
+        style={styles.userContainer}
+      >
+        {user?.photoURL ? (
+          <Animated.Image
+            sharedTransitionTag={user.displayName}
+            source={{ uri: user?.photoURL }}
+            style={styles.userImage}
+          />
+        ) : (
+          <FontAwesome5
+            name="user-circle"
+            size={50}
+            color="#6c757d"
+            style={styles.userImage}
+          />
+        )}
+        <View style={styles.userInfo}>
+          <Text style={styles.displayName}>{user?.displayName}</Text>
+          <Text style={styles.role}>{user?.role}</Text>
+          <Text style={styles.clubName}>{user?.clubName}</Text>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 
@@ -119,18 +125,20 @@ export default function Search(props) {
       );
     } else {
       return (
-        <Animated.View
-          style={styles.resultsContainer}
-          entering={FadeInDown.delay(200)}
-        >
+        <View style={styles.resultsContainer}>
           {searchResults.length > 0 && searchQuery.length > 0 ? (
             searchResults.map((user, index) => (
-              <UserItem key={index} user={user} onPress={navigateUserClicked} />
+              <UserItem
+                key={index}
+                user={user}
+                index={index}
+                onPress={navigateUserClicked}
+              />
             ))
           ) : (
             <Text style={styles.noResultsText}>{t("noresults")}</Text>
           )}
-        </Animated.View>
+        </View>
       );
     }
   };

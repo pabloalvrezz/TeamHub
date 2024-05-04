@@ -15,11 +15,14 @@ import Search from "./screens/Search";
 import SearchedUser from "./screens/SearchedUser";
 import EventDetails from "./screens/EventDetails";
 import { useTranslation } from "react-i18next";
+import TeamDetails from "./screens/TeamDetails";
+import CreateTrainer from "./screens/CreateTrainer";
 
 const Stack = createStackNavigator();
 const Tabs = createMaterialBottomTabNavigator();
 
 export default function MyStack(props) {
+  const { t } = useTranslation();
   return (
     <NavigationContainer>
       <Stack.Navigator>
@@ -49,6 +52,16 @@ export default function MyStack(props) {
           name="EventDetails"
           component={EventDetails}
           options={{ title: "Create Event" }}
+        />
+        <Stack.Screen
+          name="TeamDetails"
+          component={TeamDetails}
+          options={{ title: t("createTeam") }}
+        />
+        <Stack.Screen
+          name="CreateTrainer"
+          component={CreateTrainer}
+          options={{ title: t("createNewTrainer") }}
         />
       </Stack.Navigator>
     </NavigationContainer>

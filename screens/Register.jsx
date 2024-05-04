@@ -27,9 +27,6 @@ import {
 } from "firebase/firestore";
 import { useTranslation } from "react-i18next";
 
-// Importar traducciones
-import es from "../locales/es";
-
 const strengthLabels = ["weak", "medium", "strong"];
 const auth = getAuth(appFirebase);
 
@@ -112,7 +109,7 @@ const Register = (props) => {
           displayName: username,
           email: email,
           photoURL: "",
-          rol: "user",
+          rol: "spectator",
         });
 
         setLoading(false);

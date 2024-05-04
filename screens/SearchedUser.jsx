@@ -2,7 +2,7 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import Animated from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 
 export default function SearchedUser({ route, navigation }) {
   const user = route.params.user;
@@ -14,23 +14,21 @@ export default function SearchedUser({ route, navigation }) {
     }
   }, [user]);
 
+  const fullName = `${user?.name} ${user?.firstSurname} ${user?.middleSurname}`;
+
   return (
     <View style={styles.container}>
-      <View style={styles.userStyles}>
-        <View style={styles.profilePhoto}>
-          {user?.photoURL ? (
-            <Image source={{ uri: user.photoURL }} style={styles.image} />
-          ) : (
-            <FontAwesome5 name="user-circle" size={100} color="grey" />
-          )}
-        </View>
-        <View style={styles.userData}>
-          <Text>{user?.displayName}</Text>
-          <Text numberOfLines={1} ellipsizeMode="tail">
-            {user?.email}
-          </Text>
-        </View>
+      <View style={styles.profilePhoto}>
+        {user?.photoURL ? (
+          <Image source={{ uri: user.photoURL }} style={styles.image} />
+        ) : (
+          <FontAwesome5 name="user-circle" size={100} color="grey" />
+        )}
       </View>
+      <Animated.View entering={FadeIn.delay(200)} style={styles.userData}>
+        <Text style={styles.emailText}>{user?.email}</Text>
+        <Text style={styles.fullNameText}>{fullName}</Text>
+      </Animated.View>
       <TouchableOpacity style={styles.sendMessageButton}>
         <Text>{t("sendMessage")}</Text>
       </TouchableOpacity>
@@ -42,39 +40,34 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#ffffff",
-    paddingLeft: "3%",
-    paddingTop: "3%",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  userStyles: {
-    flexDirection: "row",
     alignItems: "center",
   },
   profilePhoto: {
-    width: 120,
-    height: 120,
-    borderRadius: 100,
-    justifyContent: "center",
     alignItems: "center",
+    marginTop: "10%",
   },
   image: {
-    width: 100,
+    width: 110,
     height: 100,
-    borderRadius: 50,
+    borderRadius: 100,
   },
   userData: {
-    marginLeft: 10,
-    flex: 1,
+    marginTop: 20,
+    alignItems: "center",
+  },
+  emailText: {
+    fontSize: 16,
+  },
+  fullNameText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: 5,
   },
   sendMessageButton: {
     backgroundColor: "#00b4d8",
     padding: 10,
     borderRadius: 5,
-    marginTop: 10,
-    marginLeft: "4%",
+    marginTop: 20,
     alignItems: "center",
     width: "90%",
   },
