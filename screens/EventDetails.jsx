@@ -99,9 +99,7 @@ export default function EventDetails() {
       <View style={styles.inputDate}>
         <TouchableOpacity onPress={() => showMode("date")}>
           <Text style={styles.dateButtonText}>
-            {date
-              ? date.getDay() + "-" + date.getMonth() + "-" + date.getFullYear()
-              : "Select date"}
+            {date ? date.toDateString() : "Select date"}
           </Text>
           <Text style={styles.dateButtonIcon}>
             <FontAwesome name="calendar" size={18} color={"black"} />

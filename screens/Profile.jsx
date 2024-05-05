@@ -265,7 +265,7 @@ export default function Profile({ navigation }) {
                 setLoading(true);
 
                 setTimeout(() => {
-                  saveProfile(userData.photoURL);
+                  updateProfilePhoto(userData.photoURL);
                 }, 500);
 
                 updateProfile(auth.currentUser, {
