@@ -1,6 +1,14 @@
 import { FontAwesome } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { Text, View, StyleSheet, ScrollView, Image } from "react-native";
+import {
+  Text,
+  View,
+  StyleSheet,
+  ScrollView,
+  Image,
+  RefreshControl,
+  SafeAreaView,
+} from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { ActivityIndicator, List } from "react-native-paper";
 import { auth } from "../screens/Login";
@@ -22,88 +30,78 @@ export default function Home({ navigation }) {
   const [teams, setTeams] = useState([]);
   const db = getFirestore();
   const { t } = useTranslation();
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    const obtainUserData = async () => {
-      try {
-        const currentUser = auth.currentUser;
-        const uid = currentUser.uid;
-
-        const userDocRef = doc(db, "users", uid);
-        const userDocSnap = await getDoc(userDocRef);
-
-        if (userDocSnap.exists()) {
-          const userDataFromDB = userDocSnap.data();
-          setUserData(userDataFromDB);
-        } else {
-          console.log("No user data found for the current user");
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-
-    const obtainEventData = async () => {
-      try {
-        const eventsCollectionRef = collection(db, "events");
-        const querySnapshot = await getDocs(eventsCollectionRef);
-        const eventsData = [];
-
-        querySnapshot.forEach((doc) => {
-          eventsData.push(doc.data());
-        });
-
-        setEvents(eventsData);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-      }
-    };
-
-    const obtainTeamData = async () => {
-      try {
-        const teamsData = [
-          {
-            id: 1,
-            name: "Equipo 1",
-            trainer: "Entrenador 1",
-            photoUrl:
-              "https://firebasestorage.googleapis.com/v0/b/teamhub-8ab29.appspot.com/o/images%2FteamPictures%2FindustrialPicture.webp?alt=media&token=329895a7-cb96-4f7f-98f0-5aa54dce92b8",
-          },
-          {
-            id: 2,
-            name: "Equipo 2",
-            trainer: "Entrenador 2",
-            photoUrl:
-              "https://firebasestorage.googleapis.com/v0/b/teamhub-8ab29.appspot.com/o/images%2FteamPictures%2FindustrialPicture.webp?alt=media&token=329895a7-cb96-4f7f-98f0-5aa54dce92b8",
-          },
-          {
-            id: 3,
-            name: "Equipo 3",
-            trainer: "Entrenador 3",
-            photoUrl:
-              "https://firebasestorage.googleapis.com/v0/b/teamhub-8ab29.appspot.com/o/images%2FteamPictures%2FindustrialPicture.webp?alt=media&token=329895a7-cb96-4f7f-98f0-5aa54dce92b8",
-          },
-        ];
-        setTeams(teamsData);
-      } catch (error) {
-        console.error("Error fetching teams:", error);
-      }
-    };
-
     obtainUserData();
     obtainEventData();
     obtainTeamData();
   }, []);
 
-  // Function to show the details of an event
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    obtainUserData();
+    obtainEventData();
+    obtainTeamData();
+    setRefreshing(false);
+  }, []);
+
+  const obtainUserData = async () => {
+    try {
+      const currentUser = auth.currentUser;
+      const uid = currentUser.uid;
+
+      const userDocRef = doc(db, "users", uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const userDataFromDB = userDocSnap.data();
+        setUserData(userDataFromDB);
+      } else {
+        console.log("No user data found for the current user");
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  const obtainEventData = async () => {
+    try {
+      const eventsCollectionRef = collection(db, "events");
+      const querySnapshot = await getDocs(eventsCollectionRef);
+      const eventsData = [];
+
+      querySnapshot.forEach((doc) => {
+        eventsData.push(doc.data());
+      });
+
+      setEvents(eventsData);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    }
+  };
+
+  const obtainTeamData = async () => {
+    try {
+      const teamsCollectionRef = collection(db, "teams");
+      const querySnapshot = await getDocs(teamsCollectionRef);
+      const teamsData = [];
+
+      querySnapshot.forEach((doc) => {
+        teamsData.push(doc.data());
+      });
+
+      setTeams(teamsData);
+    } catch (error) {
+      console.error("Error fetching teams:", error);
+    }
+  };
+
   const showEventDetails = () => {
     console.log("Event details will be shown");
   };
 
-  // Function to render the add button only for users with the correct role
   const renderAddButton = (functionToExecute) => {
-    // To add a team you need to be an admin or a team organizer
-    // To add an event you need to be an admin, a trainer or a team organizer
     const allowedRoles =
       functionToExecute === addTeam
         ? ["admin", "teamOrganizer"]
@@ -128,12 +126,17 @@ export default function Home({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {userData ? (
-        <>
+        <ScrollView
+          style={{ flex: 1 }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
           <View style={styles.teamsContainer}>
             <View style={styles.teamsTitle}>
-              <Text style={styles.titleText}>{t("teams")}</Text>
+              <Text style={styles.titleText}>{t("teams")} </Text>
               {renderAddButton(addTeam)}
             </View>
             <ScrollView
@@ -144,7 +147,7 @@ export default function Home({ navigation }) {
               {teams.map((team) => (
                 <TouchableOpacity key={team.id} style={styles.teamCard}>
                   <Image
-                    source={{ uri: team?.photoUrl }}
+                    source={{ uri: team?.profileImage }}
                     style={styles.teamImage}
                   />
                   <Text>{team.name}</Text>
@@ -155,73 +158,57 @@ export default function Home({ navigation }) {
 
           <View style={styles.eventsContainer}>
             <View style={styles.eventsTitle}>
-              <Text style={styles.titleText}>{t("events")}</Text>
+              <Text style={styles.titleText}>{t("events")} </Text>
               {renderAddButton(addEvent)}
             </View>
-            <View style={styles.events}>
-              <ScrollView style={styles.scrollView}>
-                <List.Section style={styles.listStyle}>
-                  {events.map((event, index) => (
-                    <List.Item
-                      key={index}
-                      title={
-                        <View style={styles.listItemContent}>
-                          <TouchableOpacity onPress={showEventDetails}>
-                            <FontAwesome
-                              name="calendar"
-                              size={18}
-                              color={darkColor}
-                            />
-                            <Text style={styles.listItemTitle}>
-                              {event.title}
-                            </Text>
-                            <Text style={styles.eventCreator}>
-                              {event.creator}
-                            </Text>
-                          </TouchableOpacity>
-                        </View>
-                      }
-                      style={styles.listItem}
-                    />
-                  ))}
-                </List.Section>
-              </ScrollView>
-            </View>
+            <ScrollView style={styles.events}>
+              <List.Section style={styles.listStyle}>
+                {events.map((event, index) => (
+                  <List.Item
+                    key={index}
+                    title={
+                      <View style={styles.listItemContent}>
+                        <TouchableOpacity onPress={showEventDetails}>
+                          <FontAwesome
+                            name="calendar"
+                            size={18}
+                            color={darkColor}
+                          />
+                          <Text style={styles.listItemTitle}>
+                            {event.title}
+                          </Text>
+                          <Text style={styles.eventCreator}>
+                            {event.creator}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    }
+                    style={styles.listItem}
+                  />
+                ))}
+              </List.Section>
+            </ScrollView>
           </View>
-        </>
+        </ScrollView>
       ) : (
         <ActivityIndicator color="#00b4d8" />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
     backgroundColor: lightColor,
   },
   teamsContainer: {
-    borderRadius: 27,
-    height: "30%",
-    width: "80%",
-    position: "absolute",
-    top: "17%",
-    paddingVertical: 10,
-    paddingHorizontal: 5,
+    marginTop: "15%",
+    paddingHorizontal: 10,
   },
   eventsContainer: {
-    borderRadius: 27,
-    height: "40%",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-    position: "absolute",
-    bottom: "7%",
-    paddingVertical: 10,
-    paddingHorizontal: 5,
+    marginTop: "10%",
+    paddingHorizontal: 10,
   },
   teamsTitle: {
     flexDirection: "row",
@@ -236,45 +223,41 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   titleText: {
-    marginRight: 10,
     textTransform: "uppercase",
     fontWeight: "bold",
     fontSize: 20,
   },
   teamCardsContainer: {
-    paddingHorizontal: 10,
+    marginTop: 5,
   },
   teamCard: {
     backgroundColor: "#eee",
     borderRadius: 10,
     width: 200,
-    height: "100%",
+    height: 200,
     marginRight: 10,
     alignItems: "center",
     justifyContent: "center",
+    padding: 10,
   },
   teamImage: {
     width: 100,
-    height: 120,
-    borderRadius: 0,
+    height: 100,
+    borderRadius: 50,
     marginBottom: 10,
   },
   events: {
-    height: "70%",
-    width: "80%",
-    marginBottom: 20,
+    marginTop: 5,
     backgroundColor: "#eee",
     borderRadius: 15,
     padding: 10,
+    height: 300,
   },
   listItemContent: {
-    color: darkColor,
-    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
   },
-  scrollView: {
-    height: "100%",
-    width: "100%",
-  },
+  listItemTitle: {},
   eventCreator: {
     color: "#6c757d",
     fontSize: 14,
