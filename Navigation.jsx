@@ -17,6 +17,7 @@ import EventDetails from "./screens/EventDetails";
 import { useTranslation } from "react-i18next";
 import TeamDetails from "./screens/TeamDetails";
 import CreateTrainer from "./screens/CreateTrainer";
+import { useEffect } from "react";
 
 const Stack = createStackNavigator();
 const Tabs = createMaterialBottomTabNavigator();
@@ -71,6 +72,8 @@ export default function MyStack(props) {
 
 function MyTabs(props) {
   const { t } = useTranslation();
+
+  useEffect;
 
   const HideBarLabel = () => null;
   return (

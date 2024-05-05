@@ -163,7 +163,6 @@ export default function TeamDetails({ navigation }) {
 
     // Set the selected club
     setSelectedClub(club);
-    console.log(selectedClub);
   };
 
   // Function to create a new trainer

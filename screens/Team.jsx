@@ -43,7 +43,6 @@ export default function Team() {
       setTeam(doc.data());
     });
     setLoading(false);
-    console.log(team);
   };
 
   return (

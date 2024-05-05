@@ -38,8 +38,6 @@ const ResetPassword = ({ navigation }) => {
     const db = getFirestore();
     const usersRef = collection(db, "users");
     const querySnapshot = await getDocs(usersRef);
-    console.log(querySnapshot.docs);
-
     if (querySnapshot.empty) {
       Alert.alert("Email not found");
       return;
