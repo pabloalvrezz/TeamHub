@@ -107,7 +107,11 @@ export default function Search(props) {
       const db = getFirestore();
       const usersRef = collection(db, "users");
 
-      const q = query(usersRef, where("displayName", ">=", searchQuery));
+      const q = query(
+        usersRef,
+        where("displayName", ">=", searchQuery),
+        where("displayName", "<=", searchQuery + "\uf8ff")
+      );
       const querySnapshot = await getDocs(q);
 
       const results = []; // Array to store the results
