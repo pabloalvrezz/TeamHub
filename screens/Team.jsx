@@ -13,23 +13,49 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import appFirebase from "../credencials";
+import { useTranslation } from "react-i18next";
 
-export default function Team() {
+export default function Team({ navigation }) {
   const auth = getAuth(appFirebase);
   const [loading, setLoading] = useState(false);
   const [team, setTeam] = useState(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      fetchTeam();
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+    const checkUserRole = async () => {
+      try {
+        const db = getFirestore();
+        const userRef = collection(db, "users");
+        const q = query(userRef, where("uid", "==", auth.currentUser.uid));
+        const querySnapshot = await getDocs(q);
+
+        querySnapshot.forEach((doc) => {
+          const user = doc.data();
+
+          if (user.role !== "trainer" || user.role !== "player") {
+            navigation.navigate("Home");
+            Alert.alert(t("alert"), t("noTeam"));
+          } else {
+            fetchTeam();
+          }
+        });
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    if (auth.currentUser) {
+      checkUserRole();
+    } else {
+      navigation.navigate("Login");
+    }
+  }, [auth.currentUser, navigation]);
 
   // Function to fetch team data
-  fetchTeam = async () => {
+  const fetchTeam = async () => {
     setLoading(true);
     const db = getFirestore();
     const teamRef = collection(db, "teams");
@@ -67,5 +93,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#00b4d8",
     padding: 10,
     borderRadius: 5,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
   },
 });

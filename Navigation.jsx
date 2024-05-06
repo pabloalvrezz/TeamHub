@@ -3,7 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 
 import ForgetPassword from "./screens/ForgetPassword";
 import Home from "./screens/Home";
-import Login from "./screens/Login";
+import Login, { auth } from "./screens/Login";
 import Register from "./screens/Register";
 import Team from "./screens/Team";
 
@@ -17,7 +17,15 @@ import EventDetails from "./screens/EventDetails";
 import { useTranslation } from "react-i18next";
 import TeamDetails from "./screens/TeamDetails";
 import CreateTrainer from "./screens/CreateTrainer";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import {
+  collection,
+  doc,
+  getDocs,
+  getFirestore,
+  query,
+  where,
+} from "firebase/firestore";
 
 const Stack = createStackNavigator();
 const Tabs = createMaterialBottomTabNavigator();
@@ -53,7 +61,7 @@ export default function MyStack(props) {
         <Stack.Screen
           name="EventDetails"
           component={EventDetails}
-          options={{ title: "Create Event" }}
+          options={{ title: t("createEvent") }}
         />
         <Stack.Screen
           name="TeamDetails"
@@ -72,10 +80,35 @@ export default function MyStack(props) {
 
 function MyTabs(props) {
   const { t } = useTranslation();
-
-  useEffect;
-
+  const [userData, setUserData] = useState(null);
   const HideBarLabel = () => null;
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const db = getFirestore();
+        const currentUser = auth.currentUser;
+        const uid = currentUser.uid;
+
+        const userRef = collection(db, "users");
+        const q = query(userRef, where("uid", "==", uid));
+
+        const querySnapshot = await getDocs(q);
+
+        querySnapshot.forEach((doc) => {
+          const user = doc.data();
+
+          setUserData(user);
+          console.log(userData);
+        });
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
   return (
     <Tabs.Navigator
       initialRouteName="Home"
@@ -99,21 +132,24 @@ function MyTabs(props) {
         }}
         props={props}
       />
-      <Tabs.Screen
-        name="Team"
-        component={Team}
-        options={{
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons
-              name="account-group"
-              color={color}
-              size={26}
-            />
-          ),
-          tabBarLabel: HideBarLabel,
-        }}
-        props={props}
-      />
+      {userData &&
+        (userData.role === "trainer" || userData.role === "player") && (
+          <Tabs.Screen
+            name="Team"
+            component={Team}
+            options={{
+              tabBarIcon: ({ color }) => (
+                <MaterialCommunityIcons
+                  name="account-group"
+                  color={color}
+                  size={26}
+                />
+              ),
+              tabBarLabel: HideBarLabel,
+            }}
+            props={props}
+          />
+        )}
       <Tabs.Screen
         name="Search"
         component={Search}
@@ -125,17 +161,24 @@ function MyTabs(props) {
         }}
         props={props}
       />
-      <Tabs.Screen
-        name="Statistics"
-        component={Statistics}
-        options={{
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="chart-pie" color={color} size={26} />
-          ),
-          tabBarLabel: HideBarLabel,
-        }}
-        props={props}
-      />
+      {userData &&
+        (userData.role === "trainer" || userData.role === "player") && (
+          <Tabs.Screen
+            name="Statistics"
+            component={Statistics}
+            options={{
+              tabBarIcon: ({ color }) => (
+                <MaterialCommunityIcons
+                  name="chart-pie"
+                  color={color}
+                  size={26}
+                />
+              ),
+              tabBarLabel: HideBarLabel,
+            }}
+            props={props}
+          />
+        )}
       <Tabs.Screen
         name="Profile"
         component={Profile}

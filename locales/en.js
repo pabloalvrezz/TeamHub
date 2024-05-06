@@ -6,6 +6,7 @@ const en = {
   cameraPermisson: "Permission to access camera roll is required!",
   chooseAnOption: "Choose an option",
   createNewTrainer: "Create new trainer",
+  createEvent: "Create event",
   createTeam: "Create team",
   emailAlreadyInUse: "The email address is already in use by another account.",
   emailFormat: "The email address is not in a valid format",
@@ -65,6 +66,7 @@ const en = {
   teamAlert: "Please enter all the fields in the form",
   teamCreated: "Team created successfully",
   passwordResetEmailSent: "Password reset email sent",
+  noTeam: "No team assigned",
 };
 
 export default en;

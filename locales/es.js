@@ -7,6 +7,7 @@ const es = {
   chooseAnOption: "Elige una opción",
   createNewTrainer: "Crear nuevo entrenador",
   createTeam: "Crear equipo",
+  createEvent: "Crear evento",
   emailAlreadyInUse:
     "La dirección de correo electrónico ya está siendo utilizada por otra cuenta.",
   emailFormat: "El correo electrónico no tiene un formato válido",
@@ -68,6 +69,7 @@ const es = {
   teamCreated: "Equipo creado correctamente",
   passwordResetEmailSent:
     "Se ha enviado un correo electrónico para restablecer la contraseña",
+  noTeam: "No tienes un equipo asignado",
 };
 
 export default es;
