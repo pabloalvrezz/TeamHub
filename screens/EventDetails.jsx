@@ -12,6 +12,7 @@ import { auth } from "./Login";
 import { FontAwesome } from "@expo/vector-icons";
 import { addDoc, collection, getFirestore } from "firebase/firestore";
 import { ActivityIndicator } from "react-native-paper";
+import i18n from "../i18n.config";
 
 export default function EventDetails() {
   const [title, setTitle] = useState("");
@@ -53,6 +54,12 @@ export default function EventDetails() {
       setShowDate(false);
     }
     setMode(modeToShow);
+  };
+
+  const formateDateOnLanguaje = (date) => {
+    return i18n.language === "es"
+      ? dayjs(date).format("DD-MM-YYYY")
+      : dayjs(date).format("MM-DD-YYYY");
   };
 
   // Function to handle the form submission
@@ -99,7 +106,7 @@ export default function EventDetails() {
       <View style={styles.inputDate}>
         <TouchableOpacity onPress={() => showMode("date")}>
           <Text style={styles.dateButtonText}>
-            {date ? dayjs(date).format("DD-MM-YYYY") : "Select date"}
+            {date ? formateDateOnLanguaje(date) : "Select date"}
           </Text>
           <Text style={styles.dateButtonIcon}>
             <FontAwesome name="calendar" size={18} color={"black"} />
