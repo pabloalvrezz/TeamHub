@@ -99,7 +99,7 @@ export default function EventDetails() {
       <View style={styles.inputDate}>
         <TouchableOpacity onPress={() => showMode("date")}>
           <Text style={styles.dateButtonText}>
-            {date ? date.toDateString() : "Select date"}
+            {date ? dayjs(date).format("DD-MM-YYYY") : "Select date"}
           </Text>
           <Text style={styles.dateButtonIcon}>
             <FontAwesome name="calendar" size={18} color={"black"} />

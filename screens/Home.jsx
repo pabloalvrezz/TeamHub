@@ -139,21 +139,28 @@ export default function Home({ navigation }) {
               <Text style={styles.titleText}>{t("teams")} </Text>
               {renderAddButton(addTeam)}
             </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.teamCardsContainer}
-            >
-              {teams.map((team) => (
-                <TouchableOpacity key={team.id} style={styles.teamCard}>
-                  <Image
-                    source={{ uri: team?.profileImage }}
-                    style={styles.teamImage}
-                  />
-                  <Text>{team.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+            {teams.length === 0 ? (
+              <TouchableOpacity style={styles.teamCard}>
+                <Text style={{ marginBottom: 10 }}>{t("noTeams")}</Text>
+                <FontAwesome name="users" size={24} color={darkColor} />
+              </TouchableOpacity>
+            ) : (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.teamCardsContainer}
+              >
+                {teams.map((team) => (
+                  <TouchableOpacity key={team.id} style={styles.teamCard}>
+                    <Image
+                      source={{ uri: team?.profileImage }}
+                      style={styles.teamImage}
+                    />
+                    <Text>{team.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
           </View>
 
           <View style={styles.eventsContainer}>

@@ -72,6 +72,7 @@ export default function MyStack(props) {
           name="CreateTrainer"
           component={CreateTrainer}
           options={{ title: t("createNewTrainer") }}
+          {...props}
         />
       </Stack.Navigator>
     </NavigationContainer>

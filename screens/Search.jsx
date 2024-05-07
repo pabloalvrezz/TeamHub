@@ -101,7 +101,6 @@ export default function Search(props) {
   const searchFunction = async () => {
     setLoading(true);
     try {
-      // Limpiar los resultados de búsqueda si se realiza una búsqueda
       setSearchResults([]);
 
       const db = getFirestore();

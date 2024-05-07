@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import {
   createUserWithEmailAndPassword,
   getAuth,
+  sendPasswordResetEmail,
   updateProfile,
 } from "firebase/auth";
 import appFirebase from "../credencials";
@@ -31,7 +32,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 
-export default function CreateTrainer() {
+export default function CreateTrainer({ navigation }) {
   const [name, setName] = useState("");
   const [firstSurname, setFirstSurname] = useState("");
   const [middleSurname, setMiddleSurname] = useState("");
@@ -97,8 +98,7 @@ export default function CreateTrainer() {
           new Date().getFullYear() - 18,
           new Date().getMonth(),
           new Date().getDate() + 1
-        ) ||
-      profileImage === null
+        )
     ) {
       if (!validateEmail(email)) {
         Alert.alert(t("alert"), t("emailFormat"));
@@ -126,11 +126,10 @@ export default function CreateTrainer() {
         displayName: username,
       });
 
-      const downloadURL = await uploadProfileImage(
-        profileImage,
-        userCredential
-      );
-
+      let downloadURL = "";
+      if (profileImage) {
+        downloadURL = await uploadProfileImage(profileImage, userCredential);
+      }
       const db = getFirestore();
       const trainerRef = collection(db, "users");
 
@@ -142,11 +141,13 @@ export default function CreateTrainer() {
         middleSurname: middleSurname.trim(),
         name: name.trim(),
         phoneNumber: phoneNumber,
-        photoURL: downloadURL,
+        photoURL: downloadURL ? downloadURL : "",
         role: "trainer",
         uid: userCredential.user.uid,
       });
+      sendPasswordResetEmail(auth, email);
 
+      navigation.navigate("TeamDetails");
       Alert.alert(t("success"), t("trainerCreated"));
 
       setName("");

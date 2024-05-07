@@ -22,11 +22,13 @@ import {
   query,
   where,
 } from "firebase/firestore";
+import { useTranslation } from "react-i18next";
 
 const auth = getAuth(appFirebase);
 
 const ResetPassword = ({ navigation }) => {
   const [email, setEmail] = useState("");
+  const { t } = useTranslation();
 
   // Function to reset password
   const handleResetPassword = async () => {

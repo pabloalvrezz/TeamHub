@@ -14,7 +14,15 @@ import {
 
 import { firebase } from "@react-native-firebase/storage";
 import { sendEmailVerification, updateProfile } from "firebase/auth";
-import { doc, getFirestore, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  getFirestore,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { Modal } from "react-native-paper";
 import { auth } from "./Login";
 import { useTranslation } from "react-i18next";
@@ -35,10 +43,15 @@ export default function Profile({ navigation }) {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const storedUserData = await AsyncStorage.getItem("userData");
-        if (storedUserData) {
-          setUserData(JSON.parse(storedUserData));
-        }
+        const db = getFirestore();
+        const userRef = collection(db, "users");
+
+        const q = query(userRef, where("uid", "==", auth.currentUser.uid));
+        const querySnapshot = await getDocs(q);
+
+        querySnapshot.forEach((doc) => {
+          setUserData(doc.data());
+        });
       } catch (error) {
         console.error("Error fetching user data:", error);
       }

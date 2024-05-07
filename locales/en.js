@@ -67,6 +67,9 @@ const en = {
   teamCreated: "Team created successfully",
   passwordResetEmailSent: "Password reset email sent",
   noTeam: "No team assigned",
+  noTeams: "No teams available",
+  players: "Players",
+  noPlayers: "No players available",
 };
 
 export default en;

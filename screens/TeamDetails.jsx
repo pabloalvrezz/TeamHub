@@ -188,13 +188,14 @@ export default function TeamDetails({ navigation }) {
 
       await setDoc(doc(teamRef, name), {
         name: name,
-        trainer: selectedTrainer,
-        club: selectedClub,
+        trainer: selectedTrainer.uid,
+        club: selectedClub.uid,
         profileImage: downloadURL,
       });
 
       setLoading(false);
 
+      navigation.navigate("Home");
       // Alert the user
       Alert.alert(t("success"), t("teamCreated"));
 

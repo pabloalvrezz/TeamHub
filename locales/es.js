@@ -70,6 +70,9 @@ const es = {
   passwordResetEmailSent:
     "Se ha enviado un correo electrónico para restablecer la contraseña",
   noTeam: "No tienes un equipo asignado",
+  noTeams: "No hay equipos disponibles",
+  players: "Jugadores",
+  noPlayers: "No hay jugadores disponibles",
 };
 
 export default es;
