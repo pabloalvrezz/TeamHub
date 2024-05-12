@@ -73,6 +73,12 @@ const es = {
   noTeams: "No hay equipos disponibles",
   players: "Jugadores",
   noPlayers: "No hay jugadores disponibles",
+  addPlayer: "Añadir jugador",
+  playerAlert:
+    "Porfavor introduce todos los campos del formulario. Y asegurate de que el jugador tenga más de 3 años",
+  positionPlaceHolder: "Selecciona la posición del jugador",
+  position: "Posición",
+  playerCreated: "Jugador creado correctamente",
 };
 
 export default es;

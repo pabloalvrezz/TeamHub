@@ -15,7 +15,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 import appFirebase from "../credencials";
-import { globalStyle } from "./globalStyles/styles";
 
 import i18n from "i18n-js";
 import { useTranslation } from "react-i18next";
@@ -86,7 +85,7 @@ export default function Login(props) {
       </View>
 
       <View style={styles.card}>
-        <View style={globalStyle.inputField}>
+        <View style={styles.inputField}>
           <TextInput
             name="txtEmail"
             placeholder={t("emailPlaceholder")}

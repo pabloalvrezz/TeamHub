@@ -341,7 +341,11 @@ export default function TeamDetails({ navigation }) {
                   " "
                 : t("selectTrainer")}
             </Text>
-            <FontAwesome type="font-awesome" name="chevron-down" />
+            {!showTrainerDropDown ? (
+              <FontAwesome type="font-awesome" name="chevron-down" />
+            ) : (
+              <FontAwesome type="font-awesome" name="chevron-up" />
+            )}
           </TouchableOpacity>
         )}
 
@@ -358,7 +362,11 @@ export default function TeamDetails({ navigation }) {
             <Text style={styles.dropDownButtonText}>
               {selectedClub ? selectedClub.name : t("selectClub")}
             </Text>
-            <FontAwesome type="font-awesome" name="chevron-down" />
+            {!showClubDropDown ? (
+              <FontAwesome type="font-awesome" name="chevron-down" />
+            ) : (
+              <FontAwesome type="font-awesome" name="chevron-up" />
+            )}
             {renderClubDropDown()}
           </TouchableOpacity>
         )}

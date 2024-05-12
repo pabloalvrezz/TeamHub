@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   },
 
   dateButtonText: {
-    color: "#fff",
+    color: "#000",
     fontWeight: "bold",
     textAlign: "left",
   },
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   },
 
   timeButtonText: {
-    color: "#fff",
+    color: "#000",
     fontWeight: "bold",
     textAlign: "left",
   },

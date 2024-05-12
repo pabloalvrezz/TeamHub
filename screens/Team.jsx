@@ -30,13 +30,13 @@ export default function Team({ navigation }) {
   const { t } = useTranslation();
 
   useEffect(() => {
+    setLoading(true);
     fetchRole();
-  }, []); // Empty dependency array to run once when component mounts
+  }, []);
 
   // Function to fetch role of the user
   const fetchRole = async () => {
     try {
-      setLoading(true);
       const db = getFirestore();
       const userRef = collection(db, "users");
       const q = query(userRef, where("uid", "==", auth.currentUser.uid));
@@ -47,9 +47,7 @@ export default function Team({ navigation }) {
       });
 
       fetchTeam();
-      setLoading(false);
     } catch (error) {
-      setLoading(false);
       console.error("Error fetching user role:", error);
     }
   };
@@ -57,7 +55,6 @@ export default function Team({ navigation }) {
   // Function to fetch team data
   const fetchTeam = async () => {
     try {
-      setLoading(true);
       const db = getFirestore();
 
       // Obtain the trainer data
@@ -65,62 +62,96 @@ export default function Team({ navigation }) {
       const q = query(teamRef, where("trainer", "==", auth.currentUser.uid));
       const querySnapshot = await getDocs(q);
 
-      querySnapshot.forEach((doc) => {
-        setTeam(doc.data());
-      });
+      Promise.all(
+        querySnapshot.docs.map(async (doc) => {
+          setTeam(doc.data());
+          const playersRef = collection(db, "users");
+          const playersQuery = query(
+            playersRef,
+            where("team", "==", doc.data().name),
+            where("role", "==", "player")
+          );
+          const playersSnapshot = await getDocs(playersQuery);
 
-      // Add players (I added more sample data for demonstration)
-      setPlayers([
-        {
-          name: "Lionel Messi",
-          profileImage: "https://randomuser.me/api/portraits/men/1.jpg",
-          position: "Forward",
-        },
-        {
-          name: "Cristiano Ronaldo",
-          profileImage: "https://randomuser.me/api/portraits/women/2.jpg",
-          position: "Forward",
-        },
-        {
-          name: "Neymar Jr",
-          profileImage: "https://randomuser.me/api/portraits/men/3.jpg",
-          position: "Forward",
-        },
-        {
-          name: "Kevin De Bruyne",
-          profileImage: "https://randomuser.me/api/portraits/men/4.jpg",
-          position: "Midfielder",
-        },
-        {
-          name: "Robert Lewandowski",
-          profileImage: "https://randomuser.me/api/portraits/men/5.jpg",
-          position: "Forward",
-        },
-        {
-          name: "Virgil van Dijk",
-          profileImage: "https://randomuser.me/api/portraits/men/6.jpg",
-          position: "Defender",
-        },
-        {
-          name: "Kylian Mbappé",
-          profileImage: "https://randomuser.me/api/portraits/men/7.jpg",
-          position: "Forward",
-        },
-        {
-          name: "Sergio Ramos",
-          profileImage: "https://randomuser.me/api/portraits/men/8.jpg",
-          position: "Defender",
-        },
-      ]);
+          const playersData = [];
 
-      setLoading(false);
+          playersSnapshot.forEach((playerDoc) => {
+            playersData.push(playerDoc.data());
+          });
+
+          setPlayers(playersData);
+          setLoading(false);
+        })
+      );
     } catch (error) {
       setLoading(false);
-      console.error("Error fetching team data:", error);
+      console.error("Error fetching team data: ", error);
     }
   };
 
+  const renderAddPlayerButton = () => {
+    return (
+      <TouchableOpacity
+        style={styles.addPlayerButton}
+        onPress={() => navigation.navigate("AddPlayer", { team: team })}
+      >
+        <FontAwesome name="plus" size={14} color="black" />
+      </TouchableOpacity>
+    );
+  };
+
+  const renderPlayerData = () => {
+    return (
+      <List.Section style={styles.listStyle}>
+        {players.length > 0 ? (
+          players.map((player, index) => (
+            <List.Item
+              key={index}
+              title={
+                <View style={styles.listItemContent}>
+                  {player.profileImage ? (
+                    <Image
+                      style={styles.playerImage}
+                      source={{ uri: player.profileImage }}
+                    />
+                  ) : (
+                    <FontAwesome
+                      name="user-circle"
+                      size={50}
+                      color="grey"
+                      style={styles.playerImage}
+                    />
+                  )}
+                  <View style={styles.playerDetails}>
+                    <Text style={styles.playerName}>{player.name}</Text>
+                    <Text style={styles.playerPosition}>
+                      Position: {player.position}
+                    </Text>
+                  </View>
+                </View>
+              }
+              style={styles.listItem}
+              right={() =>
+                role === "trainer" ? (
+                  <TouchableOpacity
+                    style={styles.deleteIcon}
+                    onPress={() => handleDeletePlayer(player)}
+                  >
+                    <FontAwesome name="pie-chart" size={24} color="#00b4d8" />
+                  </TouchableOpacity>
+                ) : null
+              }
+            />
+          ))
+        ) : (
+          <Text>{t("noPlayers")}</Text>
+        )}
+      </List.Section>
+    );
+  };
+
   const renderTeamData = () => {
+    if (!team) return null;
     return (
       <>
         {team && team.profileImage ? (
@@ -130,45 +161,12 @@ export default function Team({ navigation }) {
               source={{ uri: team.profileImage }}
             />
             <Text style={styles.teamName}>{team.name}</Text>
-            <Text>{t("players")}</Text>
-            <ScrollView style={styles.players}>
-              <List.Section style={styles.listStyle}>
-                {players.length > 0 ? (
-                  players.map((player, index) => (
-                    <List.Item
-                      key={index}
-                      title={
-                        <View style={styles.listItemContent}>
-                          <Image
-                            style={styles.playerImage}
-                            source={{ uri: player.profileImage }}
-                          />
-                          <View style={styles.playerDetails}>
-                            <Text style={styles.playerName}>{player.name}</Text>
-                            <Text style={styles.playerPosition}>
-                              Position: {player.position}
-                            </Text>
-                          </View>
-                        </View>
-                      }
-                      style={styles.listItem}
-                      right={() =>
-                        role === "trainer" ? (
-                          <TouchableOpacity
-                            style={styles.deleteIcon}
-                            onPress={() => handleDeletePlayer(player)}
-                          >
-                            <FontAwesome name="trash" size={24} color="red" />
-                          </TouchableOpacity>
-                        ) : null
-                      }
-                    />
-                  ))
-                ) : (
-                  <Text>{t("noPlayers")}</Text>
-                )}
-              </List.Section>
-            </ScrollView>
+            <View style={styles.playersTextButton}>
+              <Text>{t("players")} </Text>
+              {role === "trainer" ? renderAddPlayerButton() : null}
+            </View>
+
+            <ScrollView style={styles.players}>{renderPlayerData()}</ScrollView>
           </View>
         ) : (
           <View style={styles.teamData}>
@@ -248,5 +246,17 @@ const styles = StyleSheet.create({
   },
   deleteIcon: {
     top: "3%",
+  },
+  playersTextButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  addPlayerButton: {
+    borderRadius: 100,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 5,
+    top: 1,
   },
 });

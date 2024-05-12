@@ -70,6 +70,12 @@ const en = {
   noTeams: "No teams available",
   players: "Players",
   noPlayers: "No players available",
+  addPlayer: "Add player",
+  playerAlert:
+    "Please enter all the fields in the form. And the player must be older than 3 years old",
+  positionPlaceHolder: "Select the position of the player",
+  position: "Position",
+  playerCreated: "Player created successfully",
 };
 
 export default en;
