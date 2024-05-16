@@ -27,6 +27,7 @@ import {
   where,
 } from "firebase/firestore";
 import AddPlayer from "./screens/AddPlayer";
+import AddStats from "./screens/AddStats";
 
 const Stack = createStackNavigator();
 const Tabs = createMaterialBottomTabNavigator();
@@ -79,6 +80,12 @@ export default function MyStack(props) {
           name="AddPlayer"
           component={AddPlayer}
           options={{ title: t("addPlayer") }}
+          {...props}
+        />
+        <Stack.Screen
+          name="AddStats"
+          component={AddStats}
+          options={{ title: t("addStats") }}
           {...props}
         />
       </Stack.Navigator>

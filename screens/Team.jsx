@@ -135,7 +135,7 @@ export default function Team({ navigation }) {
                 role === "trainer" ? (
                   <TouchableOpacity
                     style={styles.deleteIcon}
-                    onPress={() => handleDeletePlayer(player)}
+                    onPress={() => navigateStats(player)}
                   >
                     <FontAwesome name="pie-chart" size={24} color="#00b4d8" />
                   </TouchableOpacity>
@@ -182,8 +182,8 @@ export default function Team({ navigation }) {
     );
   };
 
-  const handleDeletePlayer = (player) => {
-    console.log("Deleting player:", player.name);
+  const navigateStats = (player) => {
+    navigation.navigate("AddStats", { player: player });
   };
 
   return (

@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: "black",
+    color: "white",
     fontWeight: "bold",
     textAlign: "center",
   },

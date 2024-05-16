@@ -79,6 +79,12 @@ const es = {
   positionPlaceHolder: "Selecciona la posición del jugador",
   position: "Posición",
   playerCreated: "Jugador creado correctamente",
+  addStats: "Añadir 1estadísticas",
+  goals: "Goles",
+  assists: "Asistencias",
+  yellowCards: "Tarjetas amarillas",
+  redCards: "Tarjetas rojas",
+  passes: "Pases",
 };
 
 export default es;

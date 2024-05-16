@@ -76,6 +76,12 @@ const en = {
   positionPlaceHolder: "Select the position of the player",
   position: "Position",
   playerCreated: "Player created successfully",
+  addStats: "Add stats",
+  goals: "Goals",
+  assists: "Assists",
+  yellowCards: "Yellow cards",
+  redCards: "Red cards",
+  passes: "Passes",
 };
 
 export default en;
