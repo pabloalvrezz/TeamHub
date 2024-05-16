@@ -140,24 +140,23 @@ function MyTabs(props) {
         }}
         props={props}
       />
-      {userData &&
-        (userData.role === "trainer" || userData.role === "player") && (
-          <Tabs.Screen
-            name="Team"
-            component={Team}
-            options={{
-              tabBarIcon: ({ color }) => (
-                <MaterialCommunityIcons
-                  name="account-group"
-                  color={color}
-                  size={26}
-                />
-              ),
-              tabBarLabel: HideBarLabel,
-            }}
-            props={props}
-          />
-        )}
+      {userData && userData.role === "trainer" && (
+        <Tabs.Screen
+          name="Team"
+          component={Team}
+          options={{
+            tabBarIcon: ({ color }) => (
+              <MaterialCommunityIcons
+                name="account-group"
+                color={color}
+                size={26}
+              />
+            ),
+            tabBarLabel: HideBarLabel,
+          }}
+          props={props}
+        />
+      )}
       <Tabs.Screen
         name="Search"
         component={Search}
@@ -169,24 +168,23 @@ function MyTabs(props) {
         }}
         props={props}
       />
-      {userData &&
-        (userData.role === "trainer" || userData.role === "player") && (
-          <Tabs.Screen
-            name="Statistics"
-            component={Statistics}
-            options={{
-              tabBarIcon: ({ color }) => (
-                <MaterialCommunityIcons
-                  name="chart-pie"
-                  color={color}
-                  size={26}
-                />
-              ),
-              tabBarLabel: HideBarLabel,
-            }}
-            props={props}
-          />
-        )}
+      {userData && userData.role === "player" && (
+        <Tabs.Screen
+          name="Statistics"
+          component={Statistics}
+          options={{
+            tabBarIcon: ({ color }) => (
+              <MaterialCommunityIcons
+                name="chart-pie"
+                color={color}
+                size={26}
+              />
+            ),
+            tabBarLabel: HideBarLabel,
+          }}
+          props={props}
+        />
+      )}
       <Tabs.Screen
         name="Profile"
         component={Profile}
