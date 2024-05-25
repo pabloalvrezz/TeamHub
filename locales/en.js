@@ -82,6 +82,8 @@ const en = {
   yellowCards: "Yellow cards",
   redCards: "Red cards",
   passes: "Passes",
+  eventTitle: "Enter event title",
+  eventTime: "Enter event time",
 };
 
 export default en;

@@ -13,8 +13,10 @@ import { FontAwesome } from "@expo/vector-icons";
 import { addDoc, collection, getFirestore } from "firebase/firestore";
 import { ActivityIndicator } from "react-native-paper";
 import i18n from "../i18n.config";
+import { useTranslation } from "react-i18next";
 
 export default function EventDetails() {
+  const { t } = useTranslation();
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(new Date());
   const [showDate, setShowDate] = useState(false);
@@ -100,7 +102,7 @@ export default function EventDetails() {
           style={styles.input}
           value={title}
           onChangeText={setTitle}
-          placeholder="Enter event title"
+          placeholder={t("eventTitle")}
         />
       </View>
       <View style={styles.inputDate}>
@@ -126,7 +128,7 @@ export default function EventDetails() {
       <View style={styles.inputTime}>
         <TouchableOpacity onPress={() => showMode("time")}>
           <Text style={styles.timeButtonText}>
-            {time ? time : "Select time"}
+            {time ? time : t("eventTime")}
           </Text>
           <Text style={styles.timeButtonIcon}>
             <FontAwesome name="clock-o" size={18} color={"black"} />

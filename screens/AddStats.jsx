@@ -8,6 +8,13 @@ import {
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { FontAwesome } from "@expo/vector-icons";
+import {
+  doc,
+  getDoc,
+  getFirestore,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 
 export default function AddStats({ route, navigation }) {
   const user = route.params.player;
@@ -18,12 +25,42 @@ export default function AddStats({ route, navigation }) {
   const [redCards, setRedCards] = useState(0);
   const [assists, setAssists] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState(null);
+  const db = getFirestore();
 
   useEffect(() => {
     if (user && user.displayName) {
       navigation.setOptions({ title: user.displayName });
     }
-  });
+    obtainStats();
+  }, []);
+
+  // Function to obtain the stats of the player
+  const obtainStats = async () => {
+    try {
+      const currentPlayer = user.uid;
+      const statsRef = doc(db, "stats", currentPlayer);
+      const statsDoc = await getDoc(statsRef);
+
+      if (statsDoc.exists()) {
+        const statsData = statsDoc.data();
+        setStats(statsData);
+
+        // Set the stats of the player
+        setGoals(statsData.goals);
+        setPasses(statsData.passes);
+        setAssists(statsData.assists);
+        setYellowCards(statsData.yellowCards);
+        setRedCards(statsData.redCards);
+
+        console.log("Stats: ", statsData);
+      } else {
+        console.log("No stats found for this player");
+      }
+    } catch (error) {
+      console.log("Error getting stats: ", error);
+    }
+  };
 
   const handleIncrement = (stat) => {
     switch (stat) {
@@ -69,10 +106,46 @@ export default function AddStats({ route, navigation }) {
     }
   };
 
-  const saveStats = () => {
+  const saveStats = async () => {
     setLoading(true);
-    console.log("Stats saved");
-    setLoading(false);
+
+    setStats({
+      goals,
+      passes,
+      assists,
+      yellowCards,
+      redCards,
+    });
+
+    const statsRef = doc(db, "stats", user.uid);
+
+    try {
+      const docSnapshot = await getDoc(statsRef);
+
+      if (docSnapshot.exists()) {
+        await updateDoc(statsRef, {
+          goals,
+          passes,
+          assists,
+          yellowCards,
+          redCards,
+        });
+        console.log("Stats updated successfully");
+      } else {
+        await setDoc(statsRef, {
+          goals,
+          passes,
+          assists,
+          yellowCards,
+          redCards,
+        });
+        console.log("Stats created successfully");
+      }
+    } catch (error) {
+      console.error("Error saving stats: ", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -85,14 +158,14 @@ export default function AddStats({ route, navigation }) {
             style={styles.controlButton}
             onPress={() => handleDecrement("goals")}
           >
-            <FontAwesome name="minus" size={20} color="black" />
+            <FontAwesome name="minus" size={20} color="#555" />
           </TouchableOpacity>
           <Text style={styles.statValue}>{goals}</Text>
           <TouchableOpacity
             style={styles.controlButton}
             onPress={() => handleIncrement("goals")}
           >
-            <FontAwesome name="plus" size={20} color="black" />
+            <FontAwesome name="plus" size={20} color="#555" />
           </TouchableOpacity>
         </View>
       </View>
@@ -103,14 +176,14 @@ export default function AddStats({ route, navigation }) {
             style={styles.controlButton}
             onPress={() => handleDecrement("passes")}
           >
-            <FontAwesome name="minus" size={20} color="black" />
+            <FontAwesome name="minus" size={20} color="#555" />
           </TouchableOpacity>
           <Text style={styles.statValue}>{passes}</Text>
           <TouchableOpacity
             style={styles.controlButton}
             onPress={() => handleIncrement("passes")}
           >
-            <FontAwesome name="plus" size={20} color="black" />
+            <FontAwesome name="plus" size={20} color="#555" />
           </TouchableOpacity>
         </View>
       </View>
@@ -121,14 +194,14 @@ export default function AddStats({ route, navigation }) {
             style={styles.controlButton}
             onPress={() => handleDecrement("assists")}
           >
-            <FontAwesome name="minus" size={20} color="black" />
+            <FontAwesome name="minus" size={20} color="#555" />
           </TouchableOpacity>
           <Text style={styles.statValue}>{assists}</Text>
           <TouchableOpacity
             style={styles.controlButton}
             onPress={() => handleIncrement("assists")}
           >
-            <FontAwesome name="plus" size={20} color="black" />
+            <FontAwesome name="plus" size={20} color="#555" />
           </TouchableOpacity>
         </View>
       </View>
@@ -139,14 +212,14 @@ export default function AddStats({ route, navigation }) {
             style={styles.controlButton}
             onPress={() => handleDecrement("yellowCards")}
           >
-            <FontAwesome name="minus" size={20} color="black" />
+            <FontAwesome name="minus" size={20} color="#555" />
           </TouchableOpacity>
           <Text style={styles.statValue}>{yellowCards}</Text>
           <TouchableOpacity
             style={styles.controlButton}
             onPress={() => handleIncrement("yellowCards")}
           >
-            <FontAwesome name="plus" size={20} color="black" />
+            <FontAwesome name="plus" size={20} color="#555" />
           </TouchableOpacity>
         </View>
       </View>
@@ -157,20 +230,20 @@ export default function AddStats({ route, navigation }) {
             style={styles.controlButton}
             onPress={() => handleDecrement("redCards")}
           >
-            <FontAwesome name="minus" size={20} color="black" />
+            <FontAwesome name="minus" size={20} color="#555" />
           </TouchableOpacity>
           <Text style={styles.statValue}>{redCards}</Text>
           <TouchableOpacity
             style={styles.controlButton}
             onPress={() => handleIncrement("redCards")}
           >
-            <FontAwesome name="plus" size={20} color="black" />
+            <FontAwesome name="plus" size={20} color="#555" />
           </TouchableOpacity>
         </View>
       </View>
       <View style={styles.buttonBox}>
         {loading ? (
-          <ActivityIndicator color="black" />
+          <ActivityIndicator color="#00b4d8" />
         ) : (
           <TouchableOpacity style={styles.button} onPress={saveStats}>
             <Text style={styles.buttonText}>{t("save")}</Text>
@@ -189,32 +262,40 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
+    textAlign: "center",
   },
   statRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 15,
   },
   statLabel: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
   },
   statControls: {
     flexDirection: "row",
     alignItems: "center",
   },
   controlButton: {
-    paddingHorizontal: 15,
+    backgroundColor: "#f0f0f0",
+    padding: 10,
+    borderRadius: 5,
   },
   statValue: {
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: "bold",
     marginHorizontal: 10,
+    color: "#333",
   },
   buttonBox: {
     alignItems: "center",
+    marginTop: 30,
   },
   button: {
     backgroundColor: "#00b4d8",
@@ -226,7 +307,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: "bold",
     textAlign: "center",
   },
 });

@@ -203,6 +203,13 @@ export default function Profile({ navigation }) {
     navigation.navigate("Profile");
   };
 
+  const logOut = async () => {
+    await AsyncStorage.removeItem("isLoggedIn");
+    await AsyncStorage.removeItem("userData");
+    await auth.signOut();
+    navigation.navigate("Login");
+  };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -246,6 +253,12 @@ export default function Profile({ navigation }) {
             <View style={styles.unverifiedStatus}></View>
           </TouchableOpacity>
         )}
+      </View>
+
+      <View style={styles.goOutButton}>
+        <TouchableOpacity onPress={logOut}>
+          <FontAwesome5 name="sign-out-alt" size={30} />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.card}>
@@ -452,5 +465,15 @@ const styles = StyleSheet.create({
   languajeButtonFlag: {
     width: 30,
     height: 30,
+  },
+
+  goOutButton: {
+    position: "absolute",
+    left: 10,
+    top: "10%",
+    padding: 10,
+    borderRadius: 10,
+    height: 120,
+    width: 120,
   },
 });
