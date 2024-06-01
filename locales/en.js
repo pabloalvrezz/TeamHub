@@ -39,8 +39,7 @@ const en = {
   register: "Register",
   repeatPassword: "Repeat Password",
   save: "Save",
-  search: "Search",
-  search: "Search",
+  search: "Search users",
   sendEmailVerification: "Send email verification",
   sendMessage: "Send message",
   stats: "Stats",
@@ -84,6 +83,15 @@ const en = {
   passes: "Passes",
   eventTitle: "Enter event title",
   eventTime: "Enter event time",
+  close: "Close",
+  date: "Date",
+  time: "Time",
+  profileUpdated: "Profile updated successfully",
+  phoneNumber: "Phone number",
+  eventDeleted: "Event deleted successfully",
+  noEvents: "No events available",
+  updateEvent: "Update event",
+  teamPhotoUpdated: "Team photo updated successfully",
 };
 
 export default en;

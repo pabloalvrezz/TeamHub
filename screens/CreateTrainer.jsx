@@ -143,7 +143,7 @@ export default function CreateTrainer({ navigation }) {
         phoneNumber: phoneNumber,
         photoURL: downloadURL ? downloadURL : "",
         role: "trainer",
-        team: name,
+        team: "",
         uid: userCredential.user.uid,
       });
       sendPasswordResetEmail(auth, email);

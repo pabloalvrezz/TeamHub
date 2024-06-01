@@ -8,9 +8,12 @@ import {
   Image,
   RefreshControl,
   SafeAreaView,
+  Modal,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
-import { ActivityIndicator, List } from "react-native-paper";
+import { List } from "react-native-paper";
 import { auth } from "../screens/Login";
 import {
   getFirestore,
@@ -18,25 +21,36 @@ import {
   doc,
   collection,
   getDocs,
+  deleteDoc,
 } from "firebase/firestore";
 import { useTranslation } from "react-i18next";
+import Animated, { FadeOut } from "react-native-reanimated";
 
-const lightColor = "#fff";
-const darkColor = "#252525";
+const lightColor = "#f0f0f0";
+const darkColor = "#333";
+const primaryColor = "#00b4d8";
+const secondaryColor = "#023e8a";
+const grayColor = "#e0e0e0";
 
 export default function Home({ navigation }) {
   const [userData, setUserData] = useState(null);
   const [events, setEvents] = useState([]);
   const [teams, setTeams] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const db = getFirestore();
   const { t } = useTranslation();
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    obtainUserData();
-    obtainEventData();
-    obtainTeamData();
-  }, []);
+    const unsubscribe = navigation.addListener("focus", () => {
+      obtainUserData();
+      obtainEventData();
+      obtainTeamData();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -72,7 +86,7 @@ export default function Home({ navigation }) {
       const eventsData = [];
 
       querySnapshot.forEach((doc) => {
-        eventsData.push(doc.data());
+        eventsData.push({ id: doc.id, ...doc.data() });
       });
 
       setEvents(eventsData);
@@ -97,8 +111,14 @@ export default function Home({ navigation }) {
     }
   };
 
-  const showEventDetails = () => {
-    console.log("Event details will be shown");
+  const showEventDetails = (event) => {
+    const allowedRoles = ["admin", "trainer"];
+    if (userData && allowedRoles.includes(userData.role)) {
+      navigation.navigate("EventDetails", { event });
+    } else {
+      setSelectedEvent(event);
+      setModalVisible(true);
+    }
   };
 
   const renderAddButton = (functionToExecute) => {
@@ -123,6 +143,16 @@ export default function Home({ navigation }) {
 
   const addTeam = () => {
     navigation.navigate("TeamDetails");
+  };
+
+  const deleteEvent = async (eventId) => {
+    try {
+      await deleteDoc(doc(db, "events", eventId));
+      setEvents(events.filter((event) => event.id !== eventId));
+      Alert.alert(t("success"), t("eventDeleted"));
+    } catch (error) {
+      console.error("Error deleting event:", error);
+    }
   };
 
   return (
@@ -150,13 +180,20 @@ export default function Home({ navigation }) {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.teamCardsContainer}
               >
-                {teams.map((team) => (
-                  <TouchableOpacity key={team.id} style={styles.teamCard}>
+                {teams.map((team, index) => (
+                  <TouchableOpacity
+                    key={team.id}
+                    style={[
+                      styles.teamCard,
+                      index % 2 === 0 && { backgroundColor: grayColor },
+                    ]}
+                  >
                     <Image
                       source={{ uri: team?.profileImage }}
                       style={styles.teamImage}
                     />
-                    <Text>{team.name}</Text>
+                    <Text style={styles.teamName}>{team.name}</Text>
+                    <Text style={styles.teamClub}>{team.club}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -168,34 +205,83 @@ export default function Home({ navigation }) {
               <Text style={styles.titleText}>{t("events")} </Text>
               {renderAddButton(addEvent)}
             </View>
-            <ScrollView style={styles.events}>
-              <List.Section style={styles.listStyle}>
-                {events.map((event, index) => (
-                  <List.Item
-                    key={index}
-                    title={
-                      <View style={styles.listItemContent}>
-                        <TouchableOpacity onPress={showEventDetails}>
-                          <FontAwesome
-                            name="calendar"
-                            size={18}
-                            color={darkColor}
-                          />
-                          <Text style={styles.listItemTitle}>
-                            {event.title}
-                          </Text>
-                          <Text style={styles.eventCreator}>
-                            {event.creator}
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    }
-                    style={styles.listItem}
-                  />
-                ))}
-              </List.Section>
-            </ScrollView>
+            {events.length === 0 ? (
+              <Text style={styles.noEventsText}>{t("noEvents")}</Text>
+            ) : (
+              <ScrollView style={styles.events}>
+                <List.Section style={styles.listStyle}>
+                  {events.map((event, index) => (
+                    <Animated.View key={event.id} exiting={FadeOut}>
+                      <List.Item
+                        title={
+                          <View style={styles.listItemContent}>
+                            <TouchableOpacity
+                              onPress={() => showEventDetails(event)}
+                            >
+                              <FontAwesome
+                                name="calendar"
+                                size={18}
+                                color={primaryColor}
+                              />
+                              <Text style={styles.listItemTitle}>
+                                {event.title}
+                              </Text>
+                              <Text style={styles.eventCreator}>
+                                {event.creator}
+                              </Text>
+                            </TouchableOpacity>
+                            {userData && userData.role === "admin" && (
+                              <TouchableOpacity
+                                style={styles.trashButton}
+                                onPress={() => deleteEvent(event.id)}
+                              >
+                                <FontAwesome
+                                  name="trash"
+                                  size={18}
+                                  color="red"
+                                />
+                              </TouchableOpacity>
+                            )}
+                          </View>
+                        }
+                        style={[
+                          styles.listItem,
+                          index % 2 === 1 && { backgroundColor: grayColor },
+                        ]}
+                      />
+                    </Animated.View>
+                  ))}
+                </List.Section>
+              </ScrollView>
+            )}
           </View>
+          <Modal
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => setModalVisible(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                {selectedEvent && (
+                  <View>
+                    <Text style={styles.modalTitle}>{selectedEvent.title}</Text>
+                    <Text style={styles.modalText}>
+                      {t("date")}: {selectedEvent.date}
+                    </Text>
+                    <Text style={styles.modalText}>
+                      {t("time")}: {selectedEvent.time}
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.closeButton}
+                      onPress={() => setModalVisible(false)}
+                    >
+                      <Text style={styles.closeButtonText}>{t("close")}</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            </View>
+          </Modal>
         </ScrollView>
       ) : (
         <ActivityIndicator color="#00b4d8" />
@@ -208,65 +294,146 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: lightColor,
+    paddingTop: 10,
   },
   teamsContainer: {
-    marginTop: "15%",
-    paddingHorizontal: 10,
+    marginTop: 20,
+    paddingHorizontal: 20,
   },
   eventsContainer: {
     marginTop: "10%",
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
   },
   teamsTitle: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 5,
+    justifyContent: "space-between",
+    marginBottom: 10,
   },
   eventsTitle: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 5,
+    justifyContent: "space-between",
+    marginBottom: 10,
   },
   titleText: {
-    textTransform: "uppercase",
     fontWeight: "bold",
-    fontSize: 20,
+    fontSize: 24,
+    color: darkColor,
   },
   teamCardsContainer: {
-    marginTop: 5,
+    marginTop: 10,
   },
   teamCard: {
-    backgroundColor: "#eee",
+    backgroundColor: "#fff",
     borderRadius: 10,
-    width: 200,
+    width: 160,
     height: 200,
-    marginRight: 10,
+    marginRight: 15,
     alignItems: "center",
     justifyContent: "center",
     padding: 10,
   },
   teamImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     marginBottom: 10,
   },
+  teamName: {
+    fontWeight: "bold",
+    fontSize: 16,
+    color: darkColor,
+  },
+  teamClub: {
+    fontSize: 12,
+    color: primaryColor,
+  },
   events: {
-    marginTop: 5,
-    backgroundColor: "#eee",
-    borderRadius: 15,
-    padding: 10,
+    marginTop: 10,
     height: 300,
+  },
+  listStyle: {
+    width: "100%",
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: "#fff",
+  },
+  listItem: {
+    marginBottom: 10,
+    borderRadius: 10,
   },
   listItemContent: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    padding: 10,
+    borderRadius: 10,
+    width: "100%",
   },
-  listItemTitle: {},
+  listItemTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: darkColor,
+  },
   eventCreator: {
-    color: "#6c757d",
     fontSize: 14,
+    color: "#6c757d",
+  },
+  trashButton: {
+    position: "absolute",
+    right: -10,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    width: 300,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+    textAlign: "center",
+    color: darkColor,
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 10,
+    textAlign: "center",
+    color: darkColor,
+  },
+  closeButton: {
+    backgroundColor: primaryColor,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  closeButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    textAlign: "center",
+  },
+  addButton: {
+    backgroundColor: primaryColor,
+    padding: 10,
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    width: 40,
+    height: 40,
   },
 });

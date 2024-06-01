@@ -109,7 +109,7 @@ const Register = (props) => {
           displayName: username,
           email: email,
           photoURL: "",
-          rol: "spectator",
+          rol: "fan",
         });
 
         setLoading(false);

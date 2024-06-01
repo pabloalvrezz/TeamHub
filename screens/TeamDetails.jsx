@@ -9,6 +9,7 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import {
@@ -51,7 +52,6 @@ export default function TeamDetails({ navigation }) {
     return () => clearInterval(interval);
   }, []);
 
-  // Function to select an image from the gallery
   const selectImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -72,7 +72,6 @@ export default function TeamDetails({ navigation }) {
     }
   };
 
-  // Function to upload the profile image
   const uploadTeamImage = async (uri, teamName) => {
     try {
       const resolvedImage = await fetch(uri);
@@ -88,40 +87,29 @@ export default function TeamDetails({ navigation }) {
     }
   };
 
-  // Function to fetch all trainers
   const fetchTrainers = async () => {
     try {
       const db = getFirestore();
       const usersRef = collection(db, "users");
-      const q = query(usersRef, where("role", "==", "trainer"));
+      const q = query(
+        usersRef,
+        where("role", "==", "trainer"),
+        where("team", "==", "")
+      );
       const querySnapshot = await getDocs(q);
 
       const trainersData = [];
+
       querySnapshot.forEach((doc) => {
         trainersData.push(doc.data());
       });
 
-      const unassignedTrainers = [];
-
-      // Iterate over each trainer to check if they are assigned to any team
-      for (const trainer of trainersData) {
-        const teamRef = collection(db, "teams");
-        const q = query(teamRef, where("trainer", "==", trainer));
-        const snapshot = await getDocs(q);
-
-        // If the snapshot is empty, the trainer is not assigned to any team
-        if (snapshot.empty) {
-          unassignedTrainers.push(trainer);
-        }
-      }
-
-      setTrainers(unassignedTrainers);
+      setTrainers(trainersData);
     } catch (error) {
       console.error("Error getting trainers: ", error);
     }
   };
 
-  // Function to fetch all clubs
   const fetchClubs = async () => {
     try {
       const db = getFirestore();
@@ -130,49 +118,37 @@ export default function TeamDetails({ navigation }) {
       const clubsData = [];
       querySnapshot.forEach((doc) => {
         clubsData.push(doc.data());
-
-        setClubs(clubsData);
       });
+
+      setClubs(clubsData);
     } catch (error) {
       console.error("Error getting clubs: ", error);
     }
   };
 
-  // Function to handle the modal close
   const handleCloseModal = () => {
     setShowModal(false);
   };
 
-  // Function to handle the form submit
   const handleSelectTrainer = (trainer) => {
-    // Hide the form and the dropdown
     setHideForm(false);
     setShowTrainerDropdown(false);
     setHideClubDropdown(true);
-
-    // Set the selected trainer
     setSelectedTrainer(trainer);
   };
 
-  // Function to handle the form submit
   const handleSelectClub = (club) => {
-    // Hide the form and the dropdown
     setHideForm(false);
     setShowClubDropdown(false);
     setHideTrainerDropdown(true);
-
-    // Set the selected club
     setSelectedClub(club);
   };
 
-  // Function to create a new trainer
   const createNewTrainer = () => {
     navigation.navigate("CreateTrainer");
   };
 
-  // Function to create a new team
   const createTeam = async () => {
-    // Check if the fields are empty
     if (!name.trim() || !selectedTrainer || !selectedClub || !profileImage) {
       Alert.alert(t("alert"), t("teamAlert"));
       return;
@@ -189,17 +165,13 @@ export default function TeamDetails({ navigation }) {
       await setDoc(doc(teamRef, name), {
         name: name,
         trainer: selectedTrainer.uid,
-        club: selectedClub.uid,
+        club: selectedClub.name,
         profileImage: downloadURL,
       });
 
       setLoading(false);
-
       navigation.navigate("Home");
-      // Alert the user
       Alert.alert(t("success"), t("teamCreated"));
-
-      // Clear the form
       setName("");
       setProfileImage(null);
       setSelectedTrainer(null);
@@ -210,7 +182,6 @@ export default function TeamDetails({ navigation }) {
     }
   };
 
-  // Function render the trainer dropdown
   const renderTrainerDropDown = () => {
     return (
       <View style={styles.dropdown}>
@@ -224,9 +195,15 @@ export default function TeamDetails({ navigation }) {
               </View>
             ) : (
               trainers.map((trainer, index) => (
-                <Animated.View entering={FadeInDown.delay(200 * index)}>
+                <Animated.View
+                  key={index}
+                  entering={FadeInDown.delay(200 * index)}
+                >
                   <TouchableOpacity
-                    style={styles.dropdownItem}
+                    style={[
+                      styles.dropdownItem,
+                      index % 2 === 0 && { backgroundColor: "#f9f9f9" },
+                    ]}
                     onPress={() => {
                       handleSelectTrainer(trainer);
                     }}
@@ -257,7 +234,6 @@ export default function TeamDetails({ navigation }) {
     );
   };
 
-  // Function render the club dropdown
   const renderClubDropDown = () => {
     return (
       <View style={styles.dropdown}>
@@ -271,7 +247,10 @@ export default function TeamDetails({ navigation }) {
               </View>
             ) : (
               clubs.map((club, index) => (
-                <Animated.View entering={FadeInDown.delay(200 * index)}>
+                <Animated.View
+                  key={index}
+                  entering={FadeInDown.delay(200 * index)}
+                >
                   <TouchableOpacity
                     style={styles.dropdownItem}
                     onPress={() => {
@@ -291,7 +270,7 @@ export default function TeamDetails({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Modal visible={showModal} animationType="slide" transparent={true}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
@@ -323,29 +302,22 @@ export default function TeamDetails({ navigation }) {
           <TouchableOpacity
             style={styles.dropDownButton}
             onPress={() => {
-              setShowTrainerDropdown(showTrainerDropDown ? false : true);
+              setShowTrainerDropdown(!showTrainerDropDown);
               setShowClubDropdown(false);
-              setHideClubDropdown(hideClubDropdown ? false : true);
+              setHideClubDropdown(!hideClubDropdown);
               setHideForm(showTrainerDropDown ? false : true);
             }}
           >
-            {renderTrainerDropDown()}
             <Text style={styles.dropDownButtonText}>
-              {" "}
               {selectedTrainer
-                ? selectedTrainer.name +
-                  " " +
-                  selectedTrainer.firstSurname +
-                  " " +
-                  selectedTrainer.middleSurname +
-                  " "
+                ? `${selectedTrainer.name} ${selectedTrainer.firstSurname} ${selectedTrainer.middleSurname}`
                 : t("selectTrainer")}
             </Text>
-            {!showTrainerDropDown ? (
-              <FontAwesome type="font-awesome" name="chevron-down" />
-            ) : (
-              <FontAwesome type="font-awesome" name="chevron-up" />
-            )}
+            <FontAwesome
+              type="font-awesome"
+              name={showTrainerDropDown ? "chevron-up" : "chevron-down"}
+            />
+            {renderTrainerDropDown()}
           </TouchableOpacity>
         )}
 
@@ -353,20 +325,19 @@ export default function TeamDetails({ navigation }) {
           <TouchableOpacity
             style={styles.dropDownButton}
             onPress={() => {
-              setShowClubDropdown(showClubDropDown ? false : true);
+              setShowClubDropdown(!showClubDropDown);
               setShowTrainerDropdown(false);
-              setHideTrainerDropdown(hideTrainerDropdown ? false : true);
+              setHideTrainerDropdown(!hideTrainerDropdown);
               setHideForm(showClubDropDown ? false : true);
             }}
           >
             <Text style={styles.dropDownButtonText}>
               {selectedClub ? selectedClub.name : t("selectClub")}
             </Text>
-            {!showClubDropDown ? (
-              <FontAwesome type="font-awesome" name="chevron-down" />
-            ) : (
-              <FontAwesome type="font-awesome" name="chevron-up" />
-            )}
+            <FontAwesome
+              type="font-awesome"
+              name={showClubDropDown ? "chevron-up" : "chevron-down"}
+            />
             {renderClubDropDown()}
           </TouchableOpacity>
         )}
@@ -374,7 +345,7 @@ export default function TeamDetails({ navigation }) {
 
       {!hideForm && (
         <View style={styles.inputContainer}>
-          <Text>{t("namePlaceHolder")}:</Text>
+          <Text style={styles.label}>{t("namePlaceHolder")}:</Text>
           <TextInput
             style={[
               styles.input,
@@ -387,8 +358,8 @@ export default function TeamDetails({ navigation }) {
           />
 
           <View style={styles.inputContainer}>
-            <Text>{t("profileImagePlaceHolder")}:</Text>
-            <TouchableOpacity onPress={selectImage}>
+            <Text style={styles.label}>{t("profileImagePlaceHolder")}:</Text>
+            <TouchableOpacity style={styles.imagePicker} onPress={selectImage}>
               {profileImage ? (
                 <Image source={{ uri: profileImage }} style={styles.image} />
               ) : (
@@ -406,7 +377,7 @@ export default function TeamDetails({ navigation }) {
           </TouchableOpacity>
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
@@ -414,8 +385,7 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     backgroundColor: "#fff",
-    paddingHorizontal: 20,
-    paddingTop: 30,
+    padding: 20,
     alignItems: "center",
   },
   modalContainer: {
@@ -425,10 +395,11 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(10, 10, 10, 0.5)",
   },
   modalContent: {
-    backgroundColor: "#eee",
+    backgroundColor: "#fff",
     padding: 20,
     borderRadius: 10,
     elevation: 5,
+    width: "80%",
   },
   modalTitle: {
     fontSize: 20,
@@ -452,10 +423,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#efefef",
     height: 50,
-    width: "90%",
+    width: "100%",
     paddingHorizontal: 10,
     zIndex: 1,
-    marginBottom: "10%",
+    marginBottom: 10,
+    borderRadius: 5,
+    elevation: 2,
   },
   dropDownButtonText: {
     flex: 1,
@@ -466,14 +439,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     top: 50,
     width: "100%",
+    borderRadius: 5,
+    elevation: 2,
+    zIndex: 2,
   },
   dropdownItem: {
     padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "gray",
+    borderBottomColor: "#ccc",
     flexDirection: "row",
-    marginBottom: 10,
-    height: 50,
     alignItems: "center",
   },
   trainerImage: {
@@ -481,9 +455,6 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 12,
     marginLeft: 10,
-    position: "absolute",
-    right: 10,
-    top: 10,
   },
   inputContainer: {
     width: "100%",
@@ -500,16 +471,28 @@ const styles = StyleSheet.create({
   inputError: {
     borderColor: "red",
   },
+  label: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
   button: {
     backgroundColor: "#00b4d8",
     borderRadius: 30,
     paddingVertical: 20,
     marginTop: 20,
+    width: "100%",
+    alignItems: "center",
   },
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
     textAlign: "center",
+  },
+  imagePicker: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 10,
   },
   image: {
     width: 100,

@@ -3,8 +3,10 @@ import { useEffect, useState } from "react";
 import { Text, View, StyleSheet } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { auth } from "./Login";
+import { useTranslation } from "react-i18next";
 
 export default function Statistics() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
@@ -35,23 +37,33 @@ export default function Statistics() {
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
           <FontAwesome5 name="futbol" size={24} color="#00b4d8" />
-          <Text style={styles.statText}>Goals: {stats.goals}</Text>
+          <Text style={styles.statText}>
+            {t("goals")}: {stats.goals}
+          </Text>
         </View>
         <View style={styles.statItem}>
           <FontAwesome5 name="arrows-alt-h" size={24} color="#00b4d8" />
-          <Text style={styles.statText}>Passes: {stats.passes}</Text>
+          <Text style={styles.statText}>
+            {t("passes")}: {stats.passes}
+          </Text>
         </View>
         <View style={styles.statItem}>
           <FontAwesome5 name="hands-helping" size={24} color="#00b4d8" />
-          <Text style={styles.statText}>Assists: {stats.assists}</Text>
+          <Text style={styles.statText}>
+            {t("assists")}: {stats.assists}
+          </Text>
         </View>
         <View style={styles.statItem}>
           <FontAwesome5 name="square" size={24} color="yellow" />
-          <Text style={styles.statText}>Yellow Cards: {stats.yellowCards}</Text>
+          <Text style={styles.statText}>
+            {t("yellowCards")}: {stats.yellowCards}
+          </Text>
         </View>
         <View style={styles.statItem}>
           <FontAwesome5 name="square" size={24} color="red" />
-          <Text style={styles.statText}>Red Cards: {stats.redCards}</Text>
+          <Text style={styles.statText}>
+            {t("redCards")}: {stats.redCards}
+          </Text>
         </View>
       </View>
     );

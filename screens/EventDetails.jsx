@@ -10,12 +10,18 @@ import {
 import dayjs from "dayjs";
 import { auth } from "./Login";
 import { FontAwesome } from "@expo/vector-icons";
-import { addDoc, collection, getFirestore } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  getFirestore,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { ActivityIndicator } from "react-native-paper";
 import i18n from "../i18n.config";
 import { useTranslation } from "react-i18next";
 
-export default function EventDetails() {
+export default function EventDetails({ route, navigation }) {
   const { t } = useTranslation();
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(new Date());
@@ -25,6 +31,7 @@ export default function EventDetails() {
   const [time, setTime] = useState("");
   const [allFields, setAllFields] = useState(false);
   const [loading, setLoading] = useState(false);
+  const event = route.params?.event;
 
   useEffect(() => {
     if (title && date && time) {
@@ -33,6 +40,16 @@ export default function EventDetails() {
       setAllFields(false);
     }
   }, [title, date, time]);
+
+  useEffect(() => {
+    console.log(event);
+    if (event) {
+      setTitle(event.title);
+      setDate(new Date(event.date));
+      setTime(event.time);
+      setAllFields(true);
+    }
+  }, [event]);
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -64,26 +81,44 @@ export default function EventDetails() {
       : dayjs(date).format("MM-DD-YYYY");
   };
 
-  // Function to handle the form submission
-  const createEvent = () => {
+  const createEvent = async () => {
     setLoading(true);
     const formattedDate = dayjs(date).format("YYYY-MM-DD");
 
-    // Create a new event
-    const event = {
+    const newEvent = {
       title,
       date: formattedDate,
       time,
       creator: auth.currentUser.displayName,
     };
 
-    // Save the event in the database
     const db = getFirestore();
     const eventsRef = collection(db, "events");
 
-    addDoc(eventsRef, event);
+    await addDoc(eventsRef, newEvent);
 
-    // Reset the form
+    resetForm();
+  };
+
+  const updateEvent = async () => {
+    setLoading(true);
+    const formattedDate = dayjs(date).format("YYYY-MM-DD");
+
+    const updatedEvent = {
+      title,
+      date: formattedDate,
+      time,
+    };
+
+    const db = getFirestore();
+    const eventRef = doc(db, "events", event.id);
+
+    await updateDoc(eventRef, updatedEvent);
+    navigation.navigate("Home");
+    resetForm();
+  };
+
+  const resetForm = () => {
     setTitle("");
     setDate(new Date());
     setTime("");
@@ -92,11 +127,7 @@ export default function EventDetails() {
   };
 
   return (
-    <View
-      style={styles.container}
-      behavior="padding"
-      keyboardVerticalOffset={100}
-    >
+    <View style={styles.container}>
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -106,13 +137,19 @@ export default function EventDetails() {
         />
       </View>
       <View style={styles.inputDate}>
-        <TouchableOpacity onPress={() => showMode("date")}>
+        <TouchableOpacity
+          onPress={() => showMode("date")}
+          style={styles.button}
+        >
           <Text style={styles.dateButtonText}>
-            {date ? formateDateOnLanguaje(date) : "Select date"}
+            {date ? formateDateOnLanguaje(date) : t("selectDate")}
           </Text>
-          <Text style={styles.dateButtonIcon}>
-            <FontAwesome name="calendar" size={18} color={"black"} />
-          </Text>
+          <FontAwesome
+            name="calendar"
+            size={18}
+            color={"#fff"}
+            style={styles.icon}
+          />
         </TouchableOpacity>
         {showDate && (
           <DateTimePicker
@@ -126,13 +163,19 @@ export default function EventDetails() {
       </View>
 
       <View style={styles.inputTime}>
-        <TouchableOpacity onPress={() => showMode("time")}>
+        <TouchableOpacity
+          onPress={() => showMode("time")}
+          style={styles.button}
+        >
           <Text style={styles.timeButtonText}>
             {time ? time : t("eventTime")}
           </Text>
-          <Text style={styles.timeButtonIcon}>
-            <FontAwesome name="clock-o" size={18} color={"black"} />
-          </Text>
+          <FontAwesome
+            name="clock-o"
+            size={18}
+            color={"#fff"}
+            style={styles.icon}
+          />
         </TouchableOpacity>
         {showTime && (
           <DateTimePicker
@@ -146,9 +189,14 @@ export default function EventDetails() {
       </View>
 
       {allFields && (
-        <TouchableOpacity style={styles.createButton} onPress={createEvent}>
+        <TouchableOpacity
+          style={styles.createButton}
+          onPress={event ? updateEvent : createEvent}
+        >
           {loading && <ActivityIndicator color="#fff" />}
-          <Text style={styles.createButtonText}>Create event</Text>
+          <Text style={styles.createButtonText}>
+            {event ? t("updateEvent") : t("createEvent")}
+          </Text>
         </TouchableOpacity>
       )}
     </View>
@@ -158,85 +206,57 @@ export default function EventDetails() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#fff",
-    paddingHorizontal: 20,
-    paddingTop: 30,
+    backgroundColor: "#f5f5f5",
+    padding: 20,
+    justifyContent: "center",
   },
-  label: {
-    fontSize: 18,
-    marginBottom: 5,
-    fontWeight: "bold",
-    color: "#333",
-  },
-
   inputContainer: {
-    width: "100%",
     marginBottom: 20,
   },
-
   input: {
-    height: 40,
-    borderColor: "#ccc",
+    height: 50,
+    borderColor: "#ddd",
     borderWidth: 1,
-    paddingHorizontal: 10,
-    width: "100%",
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    fontSize: 16,
   },
-
   inputDate: {
-    width: "100%",
     marginBottom: 20,
-    justifyContent: "center",
-    backgroundColor: "#fff",
-    height: "10%",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
   },
-
-  dateButtonText: {
-    color: "#000",
-    fontWeight: "bold",
-    textAlign: "left",
-  },
-
-  dateButtonIcon: {
-    position: "absolute",
-    right: 20,
-  },
-
   inputTime: {
-    width: "100%",
     marginBottom: 20,
-    justifyContent: "center",
-    backgroundColor: "#fff",
-    height: "10%",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
   },
-
+  button: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 15,
+    backgroundColor: "#007bff",
+    borderRadius: 10,
+  },
+  dateButtonText: {
+    color: "#fff",
+    fontSize: 16,
+  },
   timeButtonText: {
-    color: "#000",
-    fontWeight: "bold",
-    textAlign: "left",
+    color: "#fff",
+    fontSize: 16,
   },
-
-  timeButtonIcon: {
-    position: "absolute",
-    right: 20,
+  icon: {
+    marginLeft: 10,
   },
-
   createButton: {
-    backgroundColor: "#00b4d8",
-    borderRadius: 30,
-    paddingVertical: 20,
-    paddingHorizontal: 50,
-    height: "8%",
+    backgroundColor: "#28a745",
+    borderRadius: 10,
+    paddingVertical: 15,
+    alignItems: "center",
     justifyContent: "center",
   },
   createButtonText: {
     color: "#fff",
+    fontSize: 18,
     fontWeight: "bold",
-    textAlign: "center",
   },
 });

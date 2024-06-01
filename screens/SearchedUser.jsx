@@ -30,7 +30,7 @@ export default function SearchedUser({ route, navigation }) {
         <Text style={styles.fullNameText}>{fullName}</Text>
       </Animated.View>
       <TouchableOpacity style={styles.sendMessageButton}>
-        <Text>{t("sendMessage")}</Text>
+        <Text style={styles.sendMessageButtonText}>{t("sendMessage")}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -70,5 +70,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
     alignItems: "center",
     width: "90%",
+  },
+  sendMessageButtonText: {
+    color: "#ffffff",
+    fontWeight: "bold",
   },
 });

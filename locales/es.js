@@ -25,7 +25,6 @@ const es = {
   incorrectPassword: "Contraseña incorrecta",
   invalidCredentials: "Credenciales inválidas",
   login: "Iniciar sesión",
-  logIn: "Iniciar sesión",
   loginError: "Error al iniciar sesión",
   medium: "Media",
   middleSurnamePlaceHolder: "Segundo apellido",
@@ -40,8 +39,7 @@ const es = {
   register: "Registrarse",
   repeatPassword: "Repetir Contraseña",
   save: "Guardar",
-  search: "Buscar",
-  search: "Buscar",
+  search: "Buscar usuarios",
   sendEmailVerification: "Enviar correo de verificación",
   sendMessage: "Enviar mensaje",
   stats: "Estadísticas",
@@ -87,6 +85,15 @@ const es = {
   passes: "Pases",
   eventTitle: "Introduce título del evento",
   eventTime: "Introduce la hora del evento",
+  close: "Cerrar",
+  date: "Fecha",
+  time: "Hora",
+  profileUpdated: "Perfil actualizado correctamente",
+  phoneNumber: "Número de teléfono",
+  eventDeleted: "Evento eliminado correctamente",
+  noEvents: "No hay eventos disponibles",
+  updateEvent: "Actualizar evento",
+  teamPhotoUpdated: "Foto de perfil del equipo actualizada correctamente",
 };
 
 export default es;

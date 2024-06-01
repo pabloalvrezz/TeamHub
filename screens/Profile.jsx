@@ -4,6 +4,7 @@ import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Image,
   StyleSheet,
   Text,
@@ -35,12 +36,13 @@ export default function Profile({ navigation }) {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [displayName, setDisplayName] = useState(auth.currentUser.displayName);
-  const [email, setEmail] = useState(auth.currentUser.email);
+  const [phoneNumber, setPhoneNumber] = useState(auth.currentUser.phoneNumber);
   const [visible, setVisible] = useState(false);
   const { t } = useTranslation();
   const route = useRoute();
 
   useEffect(() => {
+    console.log(auth.currentUser.phoneNumber);
     const fetchUserData = async () => {
       try {
         const db = getFirestore();
@@ -140,16 +142,15 @@ export default function Profile({ navigation }) {
     }
   };
 
-  // Function to update profile email
-  const updateProfileEmail = async (email) => {
+  // Function to update profile phone number
+  const updateProfilePhoneNumber = async (phoneNumber) => {
+    console.log(phoneNumber);
     try {
       setLoading(true);
 
       await updateProfile(auth.currentUser, {
-        email: email,
+        phoneNumber: phoneNumber,
       });
-
-      await auth.currentUser.sendEmailVerification();
 
       setLoading(false);
     } catch (error) {
@@ -170,7 +171,7 @@ export default function Profile({ navigation }) {
         {
           uid: uid,
           displayName: displayName,
-          email: email,
+          phoneNumber: phoneNumber,
           photoURL: auth.currentUser.photoURL,
         },
         { merge: true }
@@ -179,9 +180,11 @@ export default function Profile({ navigation }) {
       setUserData((prevUserData) => ({
         ...prevUserData,
         displayName: displayName,
-        email: email,
+        phoneNumber: phoneNumber,
         photoURL: auth.currentUser.photoURL,
       }));
+      updateProfilePhoneNumber(phoneNumber);
+      Alert.alert(t("profileUpdated"));
     } catch (error) {
       alert(t("errorUpdatingProfile"));
     }
@@ -206,29 +209,31 @@ export default function Profile({ navigation }) {
   const logOut = async () => {
     await AsyncStorage.removeItem("isLoggedIn");
     await AsyncStorage.removeItem("userData");
+    await AsyncStorage.removeItem("searchHistory");
     await auth.signOut();
     navigation.navigate("Login");
   };
 
   return (
     <View style={styles.container}>
+      <Text style={styles.header}>{t("profile")}</Text>
       <TouchableOpacity
-        style={styles.languajeButton}
+        style={styles.languageButton}
         onPress={() => changeAppLanguage(i18n.language === "en" ? "es" : "en")}
       >
         {i18n.language === "en" ? (
           <Image
             source={require("../assets/inglaterra.png")}
-            style={styles.languajeButtonFlag}
+            style={styles.languageButtonFlag}
           />
         ) : (
           <Image
             source={require("../assets/espana.png")}
-            style={styles.languajeButtonFlag}
+            style={styles.languageButtonFlag}
           />
         )}
       </TouchableOpacity>
-      <View style={styles.profilePhoto}>
+      <View style={styles.profilePhotoContainer}>
         {userData?.photoURL ? (
           <Image
             source={{ uri: userData.photoURL }}
@@ -255,7 +260,7 @@ export default function Profile({ navigation }) {
         )}
       </View>
 
-      <View style={styles.goOutButton}>
+      <View style={styles.logoutButtonContainer}>
         <TouchableOpacity onPress={logOut}>
           <FontAwesome5 name="sign-out-alt" size={30} />
         </TouchableOpacity>
@@ -264,7 +269,7 @@ export default function Profile({ navigation }) {
       <View style={styles.card}>
         <View style={styles.inputField}>
           <TextInput
-            placeholder="User"
+            placeholder={t("username")}
             style={styles.input}
             autoCapitalize="none"
             value={displayName}
@@ -273,12 +278,12 @@ export default function Profile({ navigation }) {
         </View>
         <View style={styles.inputField}>
           <TextInput
-            placeholder="Email"
+            placeholder={t("phoneNumber")}
             style={styles.input}
-            keyboardType="email-address"
+            keyboardType="phone-pad"
             autoCapitalize="none"
-            value={email}
-            onChangeText={(email) => setEmail(email)}
+            value={userData?.phoneNumber}
+            onChangeText={(phoneNumber) => setPhoneNumber(phoneNumber)}
           />
         </View>
         <View style={styles.buttonBox}>
@@ -296,7 +301,7 @@ export default function Profile({ navigation }) {
 
                 updateProfile(auth.currentUser, {
                   displayName: displayName,
-                  email: email,
+                  phoneNumber: phoneNumber,
                 });
                 setLoading(false);
               }}
@@ -333,48 +338,48 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#f5f5f5",
+    padding: 20,
   },
-
+  header: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  profilePhotoContainer: {
+    marginBottom: 20,
+    alignItems: "center",
+  },
   profilePhoto: {
     width: 120,
     height: 120,
-    borderRadius: 100,
+    borderRadius: 60,
   },
-
   uploadButton: {
     position: "absolute",
     right: 10,
     bottom: 0,
-    borderRadius: 100,
+    borderRadius: 15,
     padding: 5,
     backgroundColor: "#00b4d8",
   },
-
   modal: {
-    position: "absolute",
     backgroundColor: "rgba(255,255, 255, 0.7)",
     padding: 20,
     borderRadius: 30,
-    left: "25%",
-    width: "50%",
-    height: "20%",
-    justifyContent: "center",
+    width: "80%",
+    alignItems: "center",
   },
-
   buttonEmail: {
     backgroundColor: "#00b4d8",
     padding: 10,
     borderRadius: 5,
-    borderRadius: 5,
     marginTop: 10,
   },
-
   buttonEmailText: {
     color: "#fff",
-    fontSize: 10,
+    fontSize: 14,
   },
-
   verifiedStatus: {
     position: "absolute",
     left: 0,
@@ -385,7 +390,6 @@ const styles = StyleSheet.create({
     padding: 5,
     backgroundColor: "green",
   },
-
   unverifiedStatus: {
     position: "absolute",
     left: 0,
@@ -396,12 +400,10 @@ const styles = StyleSheet.create({
     padding: 5,
     backgroundColor: "red",
   },
-
   card: {
-    margin: 20,
     backgroundColor: "#ffffff",
     borderRadius: 20,
-    width: "90%",
+    width: "100%",
     padding: 20,
     shadowColor: "#000",
     shadowOffset: {
@@ -412,68 +414,51 @@ const styles = StyleSheet.create({
     shadowRadius: 3.96,
     elevation: 5,
   },
-
   inputField: {
-    paddingVertical: 20,
-    backgroundColor: "#cccccc",
-    borderRadius: 30,
+    paddingVertical: 10,
+    backgroundColor: "#e0e0e0",
+    borderRadius: 10,
     marginVertical: 10,
   },
-
-  inputFieldIcon: {
-    position: "absolute",
-    right: 20,
-    top: "80%",
-  },
-
   input: {
     paddingHorizontal: 15,
+    fontSize: 16,
   },
-
   buttonBox: {
     alignItems: "center",
   },
-
   button: {
     backgroundColor: "#00b4d8",
     fontWeight: "bold",
     borderRadius: 30,
-    paddingVertical: 20,
+    paddingVertical: 15,
     width: "90%",
     marginTop: 20,
     flexDirection: "row",
     justifyContent: "center",
   },
-
   buttonText: {
-    color: "black",
+    color: "#fff",
     fontWeight: "bold",
     textAlign: "center",
+    fontSize: 16,
   },
-
-  registerBox: {
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  languajeButton: {
-    position: "absolute",
-    right: 10,
-    top: "10%",
-    padding: 10,
-    borderRadius: 10,
-  },
-  languajeButtonFlag: {
-    width: 30,
-    height: 30,
-  },
-
-  goOutButton: {
+  logoutButtonContainer: {
     position: "absolute",
     left: 10,
-    top: "10%",
+    top: 10,
     padding: 10,
     borderRadius: 10,
-    height: 120,
-    width: 120,
+  },
+  languageButton: {
+    position: "absolute",
+    right: 10,
+    top: 10,
+    padding: 10,
+    borderRadius: 10,
+  },
+  languageButtonFlag: {
+    width: 30,
+    height: 30,
   },
 });

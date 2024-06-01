@@ -5,6 +5,8 @@ import {
   getFirestore,
   query,
   where,
+  doc,
+  updateDoc,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
@@ -20,6 +22,8 @@ import { useTranslation } from "react-i18next";
 import { FontAwesome } from "@expo/vector-icons";
 import { ScrollView } from "react-native-gesture-handler";
 import { List, ActivityIndicator } from "react-native-paper";
+import * as ImagePicker from "expo-image-picker";
+import { firebase } from "@react-native-firebase/storage";
 
 export default function Team({ navigation }) {
   const auth = getAuth(appFirebase);
@@ -34,7 +38,6 @@ export default function Team({ navigation }) {
     fetchRole();
   }, []);
 
-  // Function to fetch role of the user
   const fetchRole = async () => {
     try {
       const db = getFirestore();
@@ -52,12 +55,9 @@ export default function Team({ navigation }) {
     }
   };
 
-  // Function to fetch team data
   const fetchTeam = async () => {
     try {
       const db = getFirestore();
-
-      // Obtain the trainer data
       const teamRef = collection(db, "teams");
       const q = query(teamRef, where("trainer", "==", auth.currentUser.uid));
       const querySnapshot = await getDocs(q);
@@ -86,6 +86,82 @@ export default function Team({ navigation }) {
     } catch (error) {
       setLoading(false);
       console.error("Error fetching team data: ", error);
+    }
+  };
+
+  const selectImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (status !== "granted") {
+      alert(t("cameraPermission"));
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (result && !result.cancelled) {
+      if (result.assets && result.assets[0].uri) {
+        setLoading(true);
+
+        const resolvedImage = await uploadImage(result.assets[0].uri);
+
+        let ref = firebase
+          .storage()
+          .ref()
+          .child("images/teamPictures/" + team.id); // assuming team.id is the document ID
+        ref
+          .put(resolvedImage)
+          .then(() => {
+            ref.getDownloadURL().then((url) => {
+              setTeam((prevTeam) => ({
+                ...prevTeam,
+                profileImage: url,
+              }));
+
+              updateTeamPhoto(url);
+            });
+            setLoading(false);
+          })
+          .catch((error) => {
+            alert(t("errorUploadingImage"));
+          });
+      }
+    }
+  };
+
+  const uploadImage = (uri) => {
+    return new Promise((resolve, reject) => {
+      let xhr = new XMLHttpRequest();
+      xhr.onerror = reject;
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          resolve(xhr.response);
+        }
+      };
+
+      xhr.open("GET", uri);
+      xhr.responseType = "blob";
+      xhr.send();
+    });
+  };
+
+  const updateTeamPhoto = async (photoURL) => {
+    try {
+      setLoading(true);
+      const db = getFirestore();
+      const teamRef = doc(db, "teams", team.name);
+      await updateDoc(teamRef, {
+        profileImage: photoURL,
+      });
+      setLoading(false);
+      Alert.alert(t("success"), t("teamPhotoUpdated"));
+    } catch (error) {
+      alert(error);
     }
   };
 
@@ -156,10 +232,12 @@ export default function Team({ navigation }) {
       <>
         {team && team.profileImage ? (
           <View style={styles.teamData}>
-            <Image
-              style={styles.teamImage}
-              source={{ uri: team.profileImage }}
-            />
+            <TouchableOpacity onPress={selectImage}>
+              <Image
+                style={styles.teamImage}
+                source={{ uri: team.profileImage }}
+              />
+            </TouchableOpacity>
             <Text style={styles.teamName}>{team.name}</Text>
             <View style={styles.playersTextButton}>
               <Text>{t("players")} </Text>
@@ -170,12 +248,14 @@ export default function Team({ navigation }) {
           </View>
         ) : (
           <View style={styles.teamData}>
-            <FontAwesome
-              style={styles.teamImage}
-              name="users"
-              size={150}
-              color="#00b4d8"
-            />
+            <TouchableOpacity onPress={selectImage}>
+              <FontAwesome
+                style={styles.teamImage}
+                name="users"
+                size={150}
+                color="#00b4d8"
+              />
+            </TouchableOpacity>
           </View>
         )}
       </>
